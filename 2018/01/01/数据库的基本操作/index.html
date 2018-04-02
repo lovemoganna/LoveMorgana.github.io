@@ -1,338 +1,372 @@
 <!DOCTYPE html>
-<html lang=zh>
+<html>
+    <!-- title -->
+
+
+
+
+
 <head>
-    <meta name="baidu-site-verification" content="tqvy7RDErf" />
-    <meta name="google-site-verification" content="hjN29-PO_KfE-dgow-7hcz75xJj0qzZ6G2OkXZ3FVd8" />
-    <meta charset="utf-8">
-    
-    <title>数据库的基本操作 | LoveMorgana&#39;s Blog</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <meta name="description" content="Mysql的基本操作….">
-<meta name="keywords" content="Mysql,基本操作">
-<meta property="og:type" content="article">
-<meta property="og:title" content="数据库的基本操作">
-<meta property="og:url" content="luoyupiaoshang.club/2018/01/01/数据库的基本操作/index.html">
-<meta property="og:site_name" content="LoveMorgana&#39;s Blog">
-<meta property="og:description" content="Mysql的基本操作….">
-<meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-0f784ae3394e7f2f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-47413178e8440d86.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-4b866b777cdfa319.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-ad90fa5aa685ea53.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-49a886475fa1296d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-80bf0859040c39a5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-0a01927525057066.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-cc5601f170abd94a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-98ca9aaae6d26869.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-0efdf50cad3b718e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-a109f8e7af2e704c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-d3a7611b04f1e5fe.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-a776b9e4163ce97e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-1238b4286159939a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-4acf00b9751fdaba.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-7e2e10be9f2b206d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-cc4683dd195df1fe.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-21549d89eede176c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-8272ebb09877bccf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-7d431d89c3e3b3bc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-70ebd1b24a2e160c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-2563efb4e087af14.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-8bf2385488e9942a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-1d00e380b2a1cdb8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-f0c77cda267c7980.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-65707c4f961c6a45.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-e3947e4b2475ed82.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-e956ef1ad10451d1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-98f789e7888cffed.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-38c882fe1d262690.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-f1d74ba33e158fa5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-0697c5c7c5a8fff8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-f0d898e9fe4b1ec8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-3bf7543f895d3917.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-0b61ff91b16db4eb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-8afc153bedeca78f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-1993c5bdedfd95aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-238f962342e103c6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-e3de62a1fb81cd2f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-8e17af62a3c526e5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-8fbb033540592eca.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-bad8550f07ec39e7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-ef89b792a7ca2c0f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-1fae36766538ff61.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-7d9220630c429470.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-5669d011da7ce718.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-758ccbc9411559dc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-b2e7f9642bd462a1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-7bc11eae1c498e7b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7505161-9288c828836a0649.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:updated_time" content="2018-03-04T15:34:40.741Z">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="数据库的基本操作">
-<meta name="twitter:description" content="Mysql的基本操作….">
-<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/7505161-0f784ae3394e7f2f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-    
-
-    
-
-    
-
-    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
-    <link rel="stylesheet" href="/libs/open-sans/styles.css">
-    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
-
-    <link rel="stylesheet" href="/css/style.css">
-
-    <script src="/libs/jquery/2.1.3/jquery.min.js"></script>
-    
-    
-        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
-    
-    
-        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css">
-    
-    
-        <script type="text/javascript">
-    (function (i, s, o, g, r, a, m) {
-        i['GoogleAnalyticsObject'] = r;
-        i[r] = i[r] || function () {
-            (i[r].q = i[r].q || []).push(arguments)
-        }, i[r].l = 1 * new Date();
-        a = s.createElement(o),
-            m = s.getElementsByTagName(o)[0];
-        a.async = 1;
-        a.src = g;
-        m.parentNode.insertBefore(a, m)
-    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
-
-    ga('create', 'UA-113782861-1', 'auto');
-    ga('send', 'pageview');
-
-</script>
-<!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-113782861-1"></script>
-<script>
-    window.dataLayer = window.dataLayer || [];
-
-    function gtag() {
-        dataLayer.push(arguments);
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
+    <title>数据库的基本操作 · LoveMorgana&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
     }
 
-    gtag('js', new Date());
+    body {
+        margin: 0;
+    }
 
-    gtag('config', 'UA-113782861-1');
-</script>
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
 
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+        box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s 1;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= /css/style.css?v=20180317 as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" type="text/css" href= /css/mobile.css?v=20180317 media="(max-width: 980px)"/>
     
-    
-    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        
+    <link rel="icon" href= /assets/favicon.ico>
+    <script>
+        (function (w) {
+            "use strict";
+            // rel=preload support test
+            if (!w.loadCSS) {
+                w.loadCSS = function () { };
+            }
+            // define on the loadCSS obj
+            var rp = loadCSS.relpreload = {};
+            // rel=preload feature support test
+            // runs once and returns a function for compat purposes
+            rp.support = (function () {
+                var ret;
+                try {
+                    ret = w.document.createElement("link").relList.supports("preload");
+                } catch (e) {
+                    ret = false;
+                }
+                return function () {
+                    return ret;
+                };
+            })();
 
+            // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+            // then change that media back to its intended value on load
+            rp.bindMediaToggle = function (link) {
+                // remember existing media attr for ultimate state, or default to 'all'
+                var finalMedia = link.media || "all";
 
+                function enableStylesheet() {
+                    link.media = finalMedia;
+                }
+
+                // bind load handlers to enable media
+                if (link.addEventListener) {
+                    link.addEventListener("load", enableStylesheet);
+                } else if (link.attachEvent) {
+                    link.attachEvent("onload", enableStylesheet);
+                }
+
+                // Set rel and non-applicable media type to start an async request
+                // note: timeout allows this to happen async to let rendering continue in IE
+                setTimeout(function () {
+                    link.rel = "stylesheet";
+                    link.media = "only x";
+                });
+                // also enable media after 3 seconds,
+                // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+                setTimeout(enableStylesheet, 3000);
+            };
+
+            // loop through link elements in DOM
+            rp.poly = function () {
+                // double check this to prevent external calls from running
+                if (rp.support()) {
+                    return;
+                }
+                var links = w.document.getElementsByTagName("link");
+                for (var i = 0; i < links.length; i++) {
+                    var link = links[i];
+                    // qualify links to those with rel=preload and as=style attrs
+                    if (link.rel === "preload" && link.getAttribute("as") === "style" && !link.getAttribute("data-loadcss")) {
+                        // prevent rerunning on link
+                        link.setAttribute("data-loadcss", true);
+                        // bind listeners to toggle media back
+                        rp.bindMediaToggle(link);
+                    }
+                }
+            };
+
+            // if unsupported, run the polyfill
+            if (!rp.support()) {
+                // run once at least
+                rp.poly();
+
+                // rerun poly on an interval until onload
+                var run = w.setInterval(rp.poly, 500);
+                if (w.addEventListener) {
+                    w.addEventListener("load", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                } else if (w.attachEvent) {
+                    w.attachEvent("onload", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                }
+            }
+            // commonjs
+            if (typeof exports !== "undefined") {
+                exports.loadCSS = loadCSS;
+            }
+            else {
+                w.loadCSS = loadCSS;
+            }
+        }(typeof global !== "undefined" ? global : this));
+    </script>
+    <script src="//cdn.staticfile.org/jquery/3.2.1/jquery.min.js" defer></script>
+    <script src="/scripts/main.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+    <script>
+        (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+        (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date(); a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+        ga('create', 'UA-113782861-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+    
 </head>
 
-<body>
-    <div id="container">
-        <header id="header">
-    <div id="header-main" class="header-inner">
-        <div class="outer">
-            <a href="/" id="logo">
-                <i class="logo"></i>
-                <span class="site-title">LoveMorgana&#39;s Blog</span>
-            </a>
-            <nav id="main-nav">
-                
-                    <a class="main-nav-link" href="/.">主页</a>
-                
-                    <a class="main-nav-link" href="/archives">归档</a>
-                
-                    <a class="main-nav-link" href="/categories">分类</a>
-                
-                    <a class="main-nav-link" href="/tags">标签</a>
-                
-                    <a class="main-nav-link" href="/about">关于</a>
-                
-            </nav>
-            
-                
-                <nav id="sub-nav">
-                    <div class="profile" id="profile-nav">
-                        <a id="profile-anchor" href="javascript:;">
-                            <img class="avatar" src="/css/images/avatar.png" />
-                            <i class="fa fa-caret-down"></i>
-                        </a>
-                    </div>
-                </nav>
-            
-            <div id="search-form-wrap">
+    
+        <body class="post-body">
+    
+    
+<header class="header">
 
-    <form class="search-form">
-        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
-        <button type="submit" class="search-form-submit"></button>
-    </form>
-    <div class="ins-search">
-    <div class="ins-search-mask"></div>
-    <div class="ins-search-container">
-        <div class="ins-input-wrapper">
-            <input type="text" class="ins-search-input" placeholder="想要查找什么..." />
-            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
-        </div>
-        <div class="ins-section-wrapper">
-            <div class="ins-section-container"></div>
-        </div>
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >LoveMorgana&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">数据库的基本操作</a>
+            </div>
     </div>
-</div>
-<script>
-(function (window) {
-    var INSIGHT_CONFIG = {
-        TRANSLATION: {
-            POSTS: '文章',
-            PAGES: '页面',
-            CATEGORIES: '分类',
-            TAGS: '标签',
-            UNTITLED: '(未命名)',
-        },
-        ROOT_URL: '/',
-        CONTENT_URL: '/content.json',
-    };
-    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
-})(window);
-</script>
-<script src="/js/insight.js"></script>
-
-</div>
-        </div>
-    </div>
-    <div id="main-nav-mobile" class="header-sub header-inner">
-        <table class="menu outer">
-            <tr>
-                
-                    <td><a class="main-nav-link" href="/.">主页</a></td>
-                
-                    <td><a class="main-nav-link" href="/archives">归档</a></td>
-                
-                    <td><a class="main-nav-link" href="/categories">分类</a></td>
-                
-                    <td><a class="main-nav-link" href="/tags">标签</a></td>
-                
-                    <td><a class="main-nav-link" href="/about">关于</a></td>
-                
-                <td>
-                    
-    <div class="search-form">
-        <input type="text" class="ins-search-input search-form-input" placeholder="搜索" />
-    </div>
-
-                </td>
-            </tr>
-        </table>
-    </div>
+    
+    <a class="home-link" href=/>LoveMorgana's Blog</a>
 </header>
+    <div class="wrapper">
+        <div class="site-intro" style=
 
-        <div class="outer">
-            
-                
 
-<aside id="profile">
-    <div class="inner profile-inner">
-        <div class="base-info profile-block">
-            <img id="avatar" src="/css/images/avatar.png" />
-            <h2 id="name">LiGang</h2>
-            <h3 id="title">JavaWeb Developer</h3>
-            <span id="location"><i class="fa fa-map-marker"></i>HeBei, China</span>
-            <a id="follow" target="_blank" href="mailto:15733207536@163.com">关注我</a>
-        </div>
-        <div class="article-info profile-block">
-            <div class="article-info-block">
-                1
-                <span>文章</span>
-            </div>
-            <div class="article-info-block">
-                2
-                <span>标签</span>
-            </div>
-        </div>
-        
-        <div class="profile-block social-links">
-            <table>
-                <tr>
-                    
-                    
-                    <td>
-                        <a href="https://github.com/lovemoganna" target="_blank" title="github" class=tooltip>
-                            <i class="fa fa-github"></i>
-                        </a>
-                    </td>
-                    
-                    <td>
-                        <a href="https://www.jianshu.com/u/f0ac1ef14ab2" target="_blank" title="weibo" class=tooltip>
-                            <i class="fa fa-weibo"></i>
-                        </a>
-                    </td>
-                    
-                    <td>
-                        <a href="/" target="_blank" title="linkedin" class=tooltip>
-                            <i class="fa fa-linkedin"></i>
-                        </a>
-                    </td>
-                    
-                </tr>
-            </table>
-        </div>
-        
-    </div>
-</aside>
 
-            
-            <section id="main"><article id="post-数据库的基本操作" class="article article-type-post" itemscope itemprop="blogPost">
-    <div class="article-inner">
-        
-        
-            <header class="article-header">
-                
+
+
+
+
+
+height:50vh;
+
+>
     
-        <h1 class="article-title" itemprop="name">
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
             数据库的基本操作
+            <!-- 404 -->
+            
         </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <!-- 文章页标签  -->
+            
+                <div class= post-intro-tags >
     
-
-                
-                    <div class="article-meta">
-                        
-    <div class="article-date">
-        <i class="fa fa-calendar"></i>
-        <a href="/2018/01/01/数据库的基本操作/">
-            <time datetime="2018-01-01T11:59:06.000Z" itemprop="datePublished">2018-01-01</time>
-        </a>
-    </div>
-
-
-                        
-    <div class="article-category">
-    	<i class="fa fa-folder"></i>
-        <a class="article-category-link" href="/categories/mysql/">mysql</a>
-    </div>
-
-                        
-    <div class="article-tag">
-        <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/Mysql/">Mysql</a>, <a class="tag-link" href="/tags/基本操作/">基本操作</a>
-    </div>
-
-                    </div>
-                
-            </header>
-        
-        
-        <div class="article-entry" itemprop="articleBody">
-        
-            <!-- Table of Contents -->
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Mysql">Mysql</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "增删改查">增删改查</a>
+    
+</div>
             
-            <div id="toc" class="toc-article">
-                <strong class="toc-title">文章目录</strong>
-                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#RDBMS术语"><span class="toc-text">RDBMS术语</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mysql的数据类型"><span class="toc-text">mysql的数据类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#时间类型"><span class="toc-text">时间类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#字符串类型"><span class="toc-text">字符串类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建数据库"><span class="toc-text">创建数据库</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#使用此数据库"><span class="toc-text">使用此数据库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建数据库表"><span class="toc-text">创建数据库表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#删除数据表"><span class="toc-text">删除数据表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查看表的字段"><span class="toc-text">查看表的字段</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查看索引"><span class="toc-text">查看索引</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#索引类型"><span class="toc-text">索引类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建索引"><span class="toc-text">创建索引</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#删除索引"><span class="toc-text">删除索引</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#插入语句"><span class="toc-text">插入语句</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#update语句"><span class="toc-text">update语句</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#删除语句"><span class="toc-text">删除语句</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#模糊查询"><span class="toc-text">模糊查询</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Union操作符"><span class="toc-text">Union操作符</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#website表"><span class="toc-text">website表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#apps表"><span class="toc-text">apps表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#排序的使用-order-by"><span class="toc-text">排序的使用(order by)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#倒序查询"><span class="toc-text">倒序查询</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#正序查询"><span class="toc-text">正序查询</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Mysql的分组-group-by-查询"><span class="toc-text">Mysql的分组(group by)查询</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#步骤"><span class="toc-text">步骤:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#参考地址"><span class="toc-text">参考地址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#分组测试"><span class="toc-text">分组测试</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mysql连接的使用"><span class="toc-text">mysql连接的使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#我们来关联这3个表"><span class="toc-text">我们来关联这3个表:</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mysql-null-值处理"><span class="toc-text">mysql null 值处理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mysql的正则表达式"><span class="toc-text">mysql的正则表达式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Mysql的事务"><span class="toc-text">Mysql的事务</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#事务必须满足ACID这4个条件"><span class="toc-text">事务必须满足ACID这4个条件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#注意"><span class="toc-text">注意</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#事务控制语句"><span class="toc-text">事务控制语句</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Mysql事务处理主要有两种方法有2种方法"><span class="toc-text">Mysql事务处理主要有两种方法有2种方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#事务测试"><span class="toc-text">事务测试</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Alter命令"><span class="toc-text">Alter命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#删除-添加-或修改表字段"><span class="toc-text">删除,添加,或修改表字段.</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#索引"><span class="toc-text">索引</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#普通索引"><span class="toc-text">普通索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建索引-1"><span class="toc-text">创建索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#修改表结构-添加索引"><span class="toc-text">修改表结构(添加索引)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#删除索引的语法"><span class="toc-text">删除索引的语法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#唯一索引"><span class="toc-text">唯一索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建索引-2"><span class="toc-text">创建索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#修改表结构"><span class="toc-text">修改表结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#使用ALTER-命令添加和删除索引"><span class="toc-text">使用ALTER 命令添加和删除索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#使用-ALTER-命令添加和删除主键"><span class="toc-text">使用 ALTER 命令添加和删除主键</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#显示索引信息"><span class="toc-text">显示索引信息</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#临时表"><span class="toc-text">临时表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#删除临时表"><span class="toc-text">删除临时表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#复制表"><span class="toc-text">复制表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mysql的元数据"><span class="toc-text">mysql的元数据</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#获取查询语句影响的记录数"><span class="toc-text">获取查询语句影响的记录数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#数据库和数据表列表"><span class="toc-text">数据库和数据表列表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#获取服务器元数据"><span class="toc-text">获取服务器元数据</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mysql的序列"><span class="toc-text">mysql的序列</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#使用AUTO-INCREMENT"><span class="toc-text">使用AUTO_INCREMENT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#获取AUTO-INCREMENT值"><span class="toc-text">获取AUTO_INCREMENT值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#重置序列"><span class="toc-text">重置序列</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#设置序列的开始值"><span class="toc-text">设置序列的开始值</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MySQL-处理重复数据"><span class="toc-text">MySQL 处理重复数据</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#防止表中出现重复数据"><span class="toc-text">防止表中出现重复数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#统计重复数据"><span class="toc-text">统计重复数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#删除重复数据"><span class="toc-text">删除重复数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MySQL-及-SQL-注入"><span class="toc-text">MySQL 及 SQL 注入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#防止SQL注入"><span class="toc-text">防止SQL注入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Like语句中的注入"><span class="toc-text">Like语句中的注入</span></a></li></ol></li></ol>
+            <div class="post-intro-meta">
+                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                <span class="post-intro-time">2018/01/01</span>
+                
+                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                    <span class="iconfont-archer">&#xe602;</span>
+                    <span id="busuanzi_value_page_pv"></span>
+                </span>
+                
+                <span class="shareWrapper">
+                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                    <span class="shareText">Share</span>
+                    <ul class="shareList">
+                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                            <div class="share-qrcode"></div>
+                        </li>
+                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                    </ul>
+                </span>
             </div>
-            
-            <p>Mysql的基本操作….<br><a id="more"></a></p>
-<h2 id="RDBMS术语"><a href="#RDBMS术语" class="headerlink" title="RDBMS术语"></a>RDBMS术语</h2><ul>
+        
+    </div>
+</div>
+        <script>
+  // load webfont-loader async, and add callback function
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+  
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntroTags = document.getElementsByClassName('post-intro-tags')[0],
+        postIntroMeat = document.getElementsByClassName('post-intro-meta')[0];
+      if (postIntroTags) {
+        postIntroTags.classList.add('post-fade-in');
+      }
+      if (postIntroMeat) {
+        postIntroMeat.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  async("https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", asyncCb)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="RDBMS术语"><a href="#RDBMS术语" class="headerlink" title="RDBMS术语"></a>RDBMS术语</h2><ul>
 <li>数据库: 数据库是一些关联表的集合。</li>
 <li>数据表: 表是数据的矩阵。在一个数据库中的表看起来像一个简单的电子表格.</li>
 <li>列: 一列(数据元素) 包含了相同的数据, 例如邮政编码的数据。</li>
@@ -350,189 +384,189 @@ tinyint double</code></p>
 <table>
 <thead>
 <tr>
-<th>类型</th>
+<th style="text-align:center">类型</th>
 <th style="text-align:center">大小</th>
-<th style="text-align:right">范围(有符号)</th>
-<th style="text-align:right">范围(无符号)</th>
-<th style="text-align:right">用途</th>
+<th style="text-align:center">范围(有符号)</th>
+<th style="text-align:center">范围(无符号)</th>
+<th style="text-align:center">用途</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>TINYINT</td>
+<td style="text-align:center">TINYINT</td>
 <td style="text-align:center">1字节</td>
-<td style="text-align:right">(-128，127)</td>
-<td style="text-align:right">(0，255)</td>
-<td style="text-align:right">小整数值</td>
+<td style="text-align:center">(-128，127)</td>
+<td style="text-align:center">(0，255)</td>
+<td style="text-align:center">小整数值</td>
 </tr>
 <tr>
-<td>SMALLINT</td>
+<td style="text-align:center">SMALLINT</td>
 <td style="text-align:center">2 字节</td>
-<td style="text-align:right">(-32 768，32 767)</td>
-<td style="text-align:right">(0，65 535)</td>
-<td style="text-align:right">大整数值</td>
+<td style="text-align:center">(-32 768，32 767)</td>
+<td style="text-align:center">(0，65 535)</td>
+<td style="text-align:center">大整数值</td>
 </tr>
 <tr>
-<td>MEDIUMINT</td>
+<td style="text-align:center">MEDIUMINT</td>
 <td style="text-align:center">3 字节</td>
-<td style="text-align:right">(-8 388 608，8 388 607)</td>
-<td style="text-align:right">(0，16 777 215)</td>
-<td style="text-align:right">大整数值</td>
+<td style="text-align:center">(-8 388 608，8 388 607)</td>
+<td style="text-align:center">(0，16 777 215)</td>
+<td style="text-align:center">大整数值</td>
 </tr>
 <tr>
-<td>INT或INTEGER</td>
+<td style="text-align:center">INT或INTEGER</td>
 <td style="text-align:center">4 字节</td>
-<td style="text-align:right">(-2 147 483 648，2 147 483 647)</td>
-<td style="text-align:right">(0，4 294 967 295)</td>
-<td style="text-align:right">大整数值</td>
+<td style="text-align:center">(-2 147 483 648，2 147 483 647)</td>
+<td style="text-align:center">(0，4 294 967 295)</td>
+<td style="text-align:center">大整数值</td>
 </tr>
 <tr>
-<td>BIGINT</td>
+<td style="text-align:center">BIGINT</td>
 <td style="text-align:center">8 字节</td>
-<td style="text-align:right">(-9 233 372 036 854 775 808，9 223 372 036 854 775 807)</td>
-<td style="text-align:right">(0，18 446 744 073 709 551 615)</td>
-<td style="text-align:right">极大整数值</td>
+<td style="text-align:center">(-9 233 372 036 854 775 808，9 223 372 036 854 775 807)</td>
+<td style="text-align:center">(0，18 446 744 073 709 551 615)</td>
+<td style="text-align:center">极大整数值</td>
 </tr>
 <tr>
-<td>FLOAT</td>
+<td style="text-align:center">FLOAT</td>
 <td style="text-align:center">4 字节</td>
-<td style="text-align:right">(-3.402 823 466 E+38，-1.175 494 351 E-38)，0，(1.175 494 351 E-38，3.402 823 466 351 E+38)</td>
-<td style="text-align:right">0，(1.175 494 351 E-38，3.402 823 466 E+38)</td>
-<td style="text-align:right">单精度浮点数值</td>
+<td style="text-align:center">(-3.402 823 466 E+38，-1.175 494 351 E-38)，0，(1.175 494 351 E-38，3.402 823 466 351 E+38)</td>
+<td style="text-align:center">0，(1.175 494 351 E-38，3.402 823 466 E+38)</td>
+<td style="text-align:center">单精度浮点数值</td>
 </tr>
 <tr>
-<td>DOUBLE</td>
+<td style="text-align:center">DOUBLE</td>
 <td style="text-align:center">8 字节</td>
-<td style="text-align:right">(-1.797 693 134 862 315 7 E+308，-2.225 073 858 507 201 4 E-308)，0，(2.225 073 858 507 201 4 E-308，1.797 693 134 862 315 7 E+308)</td>
-<td style="text-align:right">0，(2.225 073 858 507 201 4 E-308，1.797 693 134 862 315 7 E+308)</td>
-<td style="text-align:right">双精度浮点数值</td>
+<td style="text-align:center">(-1.797 693 134 862 315 7 E+308，-2.225 073 858 507 201 4 E-308)，0，(2.225 073 858 507 201 4 E-308，1.797 693 134 862 315 7 E+308)</td>
+<td style="text-align:center">0，(2.225 073 858 507 201 4 E-308，1.797 693 134 862 315 7 E+308)</td>
+<td style="text-align:center">双精度浮点数值</td>
 </tr>
 <tr>
-<td>DECIMAL</td>
+<td style="text-align:center">DECIMAL</td>
 <td style="text-align:center">对DECIMAL(M,D) ，如果M&gt;D，为M+2否则为D+2</td>
-<td style="text-align:right">依赖于M和D的值</td>
-<td style="text-align:right">依赖于M和D的值</td>
-<td style="text-align:right">小数值</td>
+<td style="text-align:center">依赖于M和D的值</td>
+<td style="text-align:center">依赖于M和D的值</td>
+<td style="text-align:center">小数值</td>
 </tr>
 </tbody>
 </table>
 <h2 id="时间类型"><a href="#时间类型" class="headerlink" title="时间类型"></a>时间类型</h2><table>
 <thead>
 <tr>
-<th>类型</th>
+<th style="text-align:center">类型</th>
 <th style="text-align:center">大小</th>
-<th style="text-align:right">范围</th>
-<th style="text-align:right">格式</th>
-<th style="text-align:right">用途</th>
+<th style="text-align:center">范围</th>
+<th style="text-align:center">格式</th>
+<th style="text-align:center">用途</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>DATE</td>
+<td style="text-align:center">DATE</td>
 <td style="text-align:center">3</td>
-<td style="text-align:right">1000-01-01/9999-12-31</td>
-<td style="text-align:right">YYYY-MM-DD</td>
-<td style="text-align:right">日期值</td>
+<td style="text-align:center">1000-01-01/9999-12-31</td>
+<td style="text-align:center">YYYY-MM-DD</td>
+<td style="text-align:center">日期值</td>
 </tr>
 <tr>
-<td>TIME</td>
+<td style="text-align:center">TIME</td>
 <td style="text-align:center">3</td>
-<td style="text-align:right">‘-838:59:59’/‘838:59:59’</td>
-<td style="text-align:right">HH:MM:SS</td>
-<td style="text-align:right">时间值或持续时间</td>
+<td style="text-align:center">‘-838:59:59’/‘838:59:59’</td>
+<td style="text-align:center">HH:MM:SS</td>
+<td style="text-align:center">时间值或持续时间</td>
 </tr>
 <tr>
-<td>YEAR</td>
+<td style="text-align:center">YEAR</td>
 <td style="text-align:center">1</td>
-<td style="text-align:right">1901/2155</td>
-<td style="text-align:right">YYYY</td>
-<td style="text-align:right">年份值</td>
+<td style="text-align:center">1901/2155</td>
+<td style="text-align:center">YYYY</td>
+<td style="text-align:center">年份值</td>
 </tr>
 <tr>
-<td>DATETIME</td>
+<td style="text-align:center">DATETIME</td>
 <td style="text-align:center">8</td>
-<td style="text-align:right">1000-01-01 00:00:00/9999-12-31 23:59:59</td>
-<td style="text-align:right">YYYY-MM-DD HH:MM:SS</td>
-<td style="text-align:right">混合日期和时间值</td>
+<td style="text-align:center">1000-01-01 00:00:00/9999-12-31 23:59:59</td>
+<td style="text-align:center">YYYY-MM-DD HH:MM:SS</td>
+<td style="text-align:center">混合日期和时间值</td>
 </tr>
 <tr>
-<td>TIMESTAMP</td>
+<td style="text-align:center">TIMESTAMP</td>
 <td style="text-align:center">4</td>
-<td style="text-align:right">1970-01-01 00:00:00/2038,结束时间是第 2147483647 秒，北京时间 2038-1-19 11:14:07，格林尼治时间 2038年1月19日 凌晨 03:14:07</td>
-<td style="text-align:right">YYYYMMDD HHMMSS</td>
-<td style="text-align:right">混合日期和时间值，时间戳</td>
+<td style="text-align:center">1970-01-01 00:00:00/2038,结束时间是第 2147483647 秒，北京时间 2038-1-19 11:14:07，格林尼治时间 2038年1月19日 凌晨 03:14:07</td>
+<td style="text-align:center">YYYYMMDD HHMMSS</td>
+<td style="text-align:center">混合日期和时间值，时间戳</td>
 </tr>
 </tbody>
 </table>
 <h2 id="字符串类型"><a href="#字符串类型" class="headerlink" title="字符串类型"></a>字符串类型</h2><table>
 <thead>
 <tr>
-<th>类型</th>
-<th style="text-align:right">大小</th>
-<th style="text-align:right">用途</th>
+<th style="text-align:center">类型</th>
+<th style="text-align:center">大小</th>
+<th style="text-align:center">用途</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td></td>
-<td style="text-align:right">CHAR</td>
-<td style="text-align:right">0-255字节</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">CHAR</td>
+<td style="text-align:center">0-255字节</td>
 <td>定长字符串</td>
 </tr>
 <tr>
-<td>VARCHAR</td>
-<td style="text-align:right">0-65535 字节</td>
-<td style="text-align:right">变长字符串</td>
+<td style="text-align:center">VARCHAR</td>
+<td style="text-align:center">0-65535 字节</td>
+<td style="text-align:center">变长字符串</td>
 </tr>
 <tr>
-<td>TINYBLOB</td>
-<td style="text-align:right">0-255字节</td>
-<td style="text-align:right">不超过 255 个字符的二进制字符串</td>
+<td style="text-align:center">TINYBLOB</td>
+<td style="text-align:center">0-255字节</td>
+<td style="text-align:center">不超过 255 个字符的二进制字符串</td>
 </tr>
 <tr>
-<td>TINYTEXT</td>
-<td style="text-align:right">0-255字节</td>
-<td style="text-align:right">短文本字符串</td>
+<td style="text-align:center">TINYTEXT</td>
+<td style="text-align:center">0-255字节</td>
+<td style="text-align:center">短文本字符串</td>
 </tr>
 <tr>
-<td>BLOB    0-65</td>
-<td style="text-align:right">535字节</td>
-<td style="text-align:right">二进制形式的长文本数据</td>
+<td style="text-align:center">BLOB    0-65</td>
+<td style="text-align:center">535字节</td>
+<td style="text-align:center">二进制形式的长文本数据</td>
 </tr>
 <tr>
-<td>TEXT    0-65</td>
-<td style="text-align:right">535字节</td>
-<td style="text-align:right">长文本数据</td>
+<td style="text-align:center">TEXT    0-65</td>
+<td style="text-align:center">535字节</td>
+<td style="text-align:center">长文本数据</td>
 </tr>
 <tr>
-<td>MEDIUMBLOB</td>
-<td style="text-align:right">0-16777215字节</td>
-<td style="text-align:right">二进制形式的中等长度文本数据</td>
+<td style="text-align:center">MEDIUMBLOB</td>
+<td style="text-align:center">0-16777215字节</td>
+<td style="text-align:center">二进制形式的中等长度文本数据</td>
 </tr>
 <tr>
-<td>MEDIUMTEXT</td>
-<td style="text-align:right">0-16777215字节</td>
-<td style="text-align:right">中等长度文本数据</td>
+<td style="text-align:center">MEDIUMTEXT</td>
+<td style="text-align:center">0-16777215字节</td>
+<td style="text-align:center">中等长度文本数据</td>
 </tr>
 <tr>
-<td>LONGBLOB</td>
-<td style="text-align:right">0-4294967295字节</td>
-<td style="text-align:right">二进制形式的极大文本数据</td>
+<td style="text-align:center">LONGBLOB</td>
+<td style="text-align:center">0-4294967295字节</td>
+<td style="text-align:center">二进制形式的极大文本数据</td>
 </tr>
 <tr>
-<td>LONGTEXT</td>
-<td style="text-align:right">0-4294967295字节</td>
-<td style="text-align:right">极大文本数据</td>
+<td style="text-align:center">LONGTEXT</td>
+<td style="text-align:center">0-4294967295字节</td>
+<td style="text-align:center">极大文本数据</td>
 </tr>
 </tbody>
 </table>
 <figure class="highlight vbnet"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CHAR</span>和VARCHAR类型类似，但它们保存和检索的方式不同。</span><br><span class="line"></span><br><span class="line">它们的最大长度和是否尾部空格被保留等方面也不同。在存储或检索过程中不进行大小写转换。</span><br><span class="line"></span><br><span class="line"><span class="keyword">BINARY</span>和VARBINARY类类似于<span class="built_in">CHAR</span>和VARCHAR，不同的是它们包含二进制字符串而不要非二进制字符串。</span><br><span class="line">也就是说，它们包含字节字符串而不是字符字符串。这说明它们没有字符集，并且排序和比较基于列值字节的数值值。</span><br><span class="line"></span><br><span class="line">BLOB是一个二进制大对象，可以容纳可变数量的数据。</span><br><span class="line">有<span class="number">4</span>种BLOB类型：TINYBLOB、BLOB、MEDIUMBLOB和LONGBLOB。它们只是可容纳值的最大长度不同。</span><br><span class="line"></span><br><span class="line">有<span class="number">4</span>种<span class="keyword">TEXT</span>类型：TINYTEXT、<span class="keyword">TEXT</span>、MEDIUMTEXT和LONGTEXT。这些对应<span class="number">4</span>种BLOB类型，有相同的最大长度和存储需求。</span><br></pre></td></tr></table></figure>
-<h2 id="创建数据库"><a href="#创建数据库" class="headerlink" title="创建数据库"></a>创建数据库</h2><p>create database student;</p>
-<h3 id="使用此数据库"><a href="#使用此数据库" class="headerlink" title="使用此数据库"></a>使用此数据库</h3><p>use student;</p>
+<h2 id="创建数据库"><a href="#创建数据库" class="headerlink" title="创建数据库"></a>创建数据库</h2><p><code>create database student;</code></p>
+<h3 id="使用此数据库"><a href="#使用此数据库" class="headerlink" title="使用此数据库"></a>使用此数据库</h3><p><code>use student;</code></p>
 <h3 id="创建数据库表"><a href="#创建数据库表" class="headerlink" title="创建数据库表"></a>创建数据库表</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> student_inf(</span><br><span class="line">  <span class="string">`student_id`</span> <span class="built_in">int</span> <span class="keyword">not</span> <span class="literal">null</span> auto_increment <span class="keyword">comment</span> <span class="string">'学生ID'</span>,</span><br><span class="line">  <span class="string">`student_name`</span> <span class="built_in">VARCHAR</span>(<span class="number">21</span>) <span class="keyword">not</span> <span class="literal">null</span> <span class="keyword">comment</span> <span class="string">"学生姓名"</span>,</span><br><span class="line">  <span class="string">`student_age`</span> <span class="built_in">int</span> <span class="keyword">not</span> <span class="literal">null</span> <span class="keyword">comment</span> <span class="string">"学生年龄"</span>,</span><br><span class="line">  <span class="string">`student_birthday`</span> <span class="built_in">DATE</span> <span class="keyword">not</span> <span class="literal">null</span> <span class="keyword">comment</span> <span class="string">"出生日期"</span>,</span><br><span class="line">  <span class="string">`create_time`</span> <span class="keyword">timestamp</span> <span class="keyword">not</span> <span class="literal">null</span> <span class="keyword">default</span> <span class="keyword">current_timestamp</span> <span class="keyword">comment</span> <span class="string">"创建时间"</span>,</span><br><span class="line">   primary <span class="keyword">key</span>(student_id),</span><br><span class="line">   <span class="keyword">key</span> idx_create_time(create_time)</span><br><span class="line">  )<span class="keyword">ENGINE</span>=<span class="keyword">Innodb</span> auto_increment = <span class="number">1000</span> <span class="keyword">DEFAULT</span> <span class="keyword">charset</span> = utf8 <span class="keyword">comment</span> =<span class="string">'学生信息表'</span>;</span><br></pre></td></tr></table></figure>
 <p>我们可以查看表的结构:</p>
 <p><img src="http://upload-images.jianshu.io/upload_images/7505161-0f784ae3394e7f2f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
-<h2 id="删除数据表"><a href="#删除数据表" class="headerlink" title="删除数据表"></a>删除数据表</h2><p>drop table table_name;</p>
+<h2 id="删除数据表"><a href="#删除数据表" class="headerlink" title="删除数据表"></a>删除数据表</h2><p><code>drop table table_name;</code></p>
 <h2 id="查看表的字段"><a href="#查看表的字段" class="headerlink" title="查看表的字段"></a>查看表的字段</h2><p><img src="http://upload-images.jianshu.io/upload_images/7505161-47413178e8440d86.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
 <h2 id="查看索引"><a href="#查看索引" class="headerlink" title="查看索引"></a>查看索引</h2><p><code>show index from stundet_inf;</code><br><code>show keys from student_inf;</code></p>
 <p>这两种方式都可以,查出来是2条索引.</p>
@@ -576,14 +610,8 @@ tinyint double</code></p>
 <h3 id="website表"><a href="#website表" class="headerlink" title="website表"></a>website表</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> website(</span><br><span class="line">  <span class="string">`website_id`</span> <span class="built_in">int</span> <span class="keyword">not</span> <span class="literal">null</span> auto_increment <span class="keyword">comment</span> <span class="string">'站点ID'</span>,</span><br><span class="line">  <span class="string">`website_name`</span> <span class="built_in">varchar</span>(<span class="number">21</span>) <span class="keyword">not</span> <span class="literal">null</span> <span class="keyword">comment</span> <span class="string">'站点名称'</span>,</span><br><span class="line">  <span class="string">`website_url`</span> <span class="built_in">varchar</span>(<span class="number">100</span>) <span class="keyword">not</span> <span class="literal">null</span> <span class="keyword">comment</span> <span class="string">'站点地址'</span>,</span><br><span class="line">  <span class="string">`website_alexa`</span> <span class="built_in">smallint</span> <span class="keyword">not</span> <span class="literal">null</span> <span class="keyword">comment</span> <span class="string">'点击度排名'</span>,</span><br><span class="line">  <span class="string">`website_country`</span> <span class="built_in">VARCHAR</span>(<span class="number">10</span>) <span class="keyword">not</span> <span class="literal">null</span> <span class="keyword">comment</span> <span class="string">'站点服务维护所在国家'</span>,</span><br><span class="line">  <span class="string">`create_time`</span> <span class="keyword">timestamp</span> <span class="keyword">not</span> <span class="literal">null</span> <span class="keyword">default</span> <span class="keyword">current_timestamp</span> <span class="keyword">comment</span> <span class="string">'创建时间'</span>,</span><br><span class="line">   primary <span class="keyword">key</span>(<span class="string">`website_id`</span>),</span><br><span class="line">   <span class="keyword">key</span> idx_create_time(create_time) <span class="keyword">comment</span> <span class="string">'创建间索引'</span></span><br><span class="line">  )<span class="keyword">ENGINE</span>=<span class="keyword">Innodb</span> <span class="keyword">default</span> <span class="keyword">charset</span> =utf8;</span><br></pre></td></tr></table></figure>
 <h3 id="apps表"><a href="#apps表" class="headerlink" title="apps表"></a>apps表</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> apps(</span><br><span class="line">  <span class="string">`apps_id`</span> <span class="built_in">int</span> <span class="keyword">not</span> <span class="literal">null</span> auto_increment <span class="keyword">comment</span> <span class="string">'站点ID'</span>,</span><br><span class="line">  <span class="string">`apps_name`</span> <span class="built_in">varchar</span>(<span class="number">21</span>) <span class="keyword">not</span> <span class="literal">null</span> <span class="keyword">comment</span> <span class="string">'站点名称'</span>,</span><br><span class="line">  <span class="string">`apps_url`</span> <span class="built_in">varchar</span>(<span class="number">100</span>) <span class="keyword">not</span> <span class="literal">null</span> <span class="keyword">comment</span> <span class="string">'站点地址'</span>,</span><br><span class="line">  <span class="string">`apps_country`</span> <span class="built_in">VARCHAR</span>(<span class="number">10</span>) <span class="keyword">not</span> <span class="literal">null</span> <span class="keyword">comment</span> <span class="string">'站点服务维护所在国家'</span>,</span><br><span class="line">  <span class="string">`create_time`</span> <span class="keyword">timestamp</span> <span class="keyword">not</span> <span class="literal">null</span> <span class="keyword">default</span> <span class="keyword">current_timestamp</span> <span class="keyword">comment</span> <span class="string">'创建时间'</span>,</span><br><span class="line">   primary <span class="keyword">key</span>(<span class="string">`apps_id`</span>),</span><br><span class="line">   <span class="keyword">key</span> idx_create_time(create_time) <span class="keyword">comment</span> <span class="string">'创建间索引'</span></span><br><span class="line">  )<span class="keyword">ENGINE</span>=<span class="keyword">Innodb</span> <span class="keyword">default</span> <span class="keyword">charset</span> =utf8;</span><br></pre></td></tr></table></figure>
 <p>插入数据</p>
-<ol>
-<li><p>插入website的数据</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> website(website_id,website_name,website_url,website_alexa,website_country,create_time) <span class="keyword">values</span>(<span class="literal">null</span>,<span class="string">'Google'</span>,<span class="string">'https://www.google.cm/'</span>,<span class="number">1</span>,<span class="string">'USA'</span>,<span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> website(website_id,website_name,website_url,website_alexa,website_country,create_time) <span class="keyword">values</span>(<span class="literal">null</span>,<span class="string">'淘宝'</span>,<span class="string">'https://www.taobao.cm/'</span>,<span class="number">13</span>,<span class="string">'CN'</span>,<span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line">再编几个吧</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>插入apps表的数据</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> apps(apps_id,apps_name,apps_url,apps_country,create_time) <span class="keyword">values</span> (<span class="literal">null</span>,<span class="string">'QQ APP'</span>,<span class="string">'http://im.qq.com'</span>,<span class="string">'CN'</span>,<span class="literal">null</span>);</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
+<p>1.插入website的数据<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> website(website_id,website_name,website_url,website_alexa,website_country,create_time) <span class="keyword">values</span>(<span class="literal">null</span>,<span class="string">'Google'</span>,<span class="string">'https://www.google.cm/'</span>,<span class="number">1</span>,<span class="string">'USA'</span>,<span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> website(website_id,website_name,website_url,website_alexa,website_country,create_time) <span class="keyword">values</span>(<span class="literal">null</span>,<span class="string">'淘宝'</span>,<span class="string">'https://www.taobao.cm/'</span>,<span class="number">13</span>,<span class="string">'CN'</span>,<span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line">再编几个吧</span><br></pre></td></tr></table></figure></p>
+<p>2.插入apps表的数据<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> apps(apps_id,apps_name,apps_url,apps_country,create_time) <span class="keyword">values</span> (<span class="literal">null</span>,<span class="string">'QQ APP'</span>,<span class="string">'http://im.qq.com'</span>,<span class="string">'CN'</span>,<span class="literal">null</span>);</span><br></pre></td></tr></table></figure></p>
 <p>3.使用<code>union</code>或者’union all’关键字来进行两个表之间的查询数据.</p>
 <p>4.开始查询</p>
 <p>union关键字的使用:</p>
@@ -903,234 +931,243 @@ tinyint double</code></p>
 <p><code>addcslashes(string,characters)</code></p>
 <p><img src="http://upload-images.jianshu.io/upload_images/7505161-9288c828836a0649.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
 
-        
-        </div>
-        <footer class="article-footer">
-            <div class="share-container">
-
-    <div class="jiathis_style">
-    <span class="jiathis_txt">分享到：</span>
-    <a class="jiathis_button_qzone">QQ空间</a>
-    <a class="jiathis_button_tsina">新浪微博</a>
-    <a class="jiathis_button_tqq">腾讯微博</a>
-    <a class="jiathis_button_weixin">微信</a>
-    <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
-    <a class="jiathis_counter_style"></a>
-</div>
-<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js" charset="utf-8"></script>
-<style>
-    .jiathis_style div:first-child:not(.jiadiv_01) {
-        width: auto !important;
-        border: none !important;
-    }
-    .jiathis_style .jiadiv_01 {
-        margin: 10px 0;
-        border-radius: 4px;
-        border: #e1e1e1 solid 1px;
-    }
-    .jiathis_style .jiadiv_01 div:first-child {
-        display: none;
-    }
-    .jiathis_style .jiadiv_02 {
-        padding: 7px 0 !important;
-    }
-    .jiathis_style .jiadiv_02 .jiatitle {
-        width: 85px;
-        border: none;
-        height: auto;
-        margin: 3px 10px;
-        padding: 6px 10px;
-        border-radius: 4px;
-    }
-    .jiathis_style .jiadiv_02 .jiatitle:hover {
-        border: none;
-    }
-    .jiathis_style .jiadiv_02 .jiatitle:nth-child(even) {
-        margin-left: 0;
-    }
-    .jiathis_style .jtico:hover {
-        opacity: 1;
-    }
-    .jiathis_style .ckepopBottom,
-    .jiathis_style .centerBottom {
-        width: auto !important;
-        padding: 5px;
-        background: #f7f7f7;
-    }
-</style>
-
-
-
-</div>
-
+    </article>
+    <!-- 前后页  -->
+    <ul class="post-paginator">
+        <li class="next">
             
-    
-        <a href="luoyupiaoshang.club/2018/01/01/数据库的基本操作/#comments" class="article-comment-link">评论</a>
-    
-
-        </footer>
-    </div>
-    
-        
-
-    
-</article>
-
-
-    
-    
-        <section id="comments">
-    <div id="lv-container" data-id="city" data-uid=MTAyMC8zNDE4Ni8xMDcyMw==></div>
-</section>
-    
-
-
-
-</section>
+        </li>
+        <li class="previous">
             
-                
-<aside id="sidebar">
-   
-        
-    <div class="widget-wrap">
-        <h3 class="widget-title">最新文章</h3>
-        <div class="widget">
-            <ul id="recent-post" class="">
-                
-                    <li>
-                        
-                        <div class="item-thumbnail">
-                            <a href="/2018/01/01/数据库的基本操作/" class="thumbnail">
-    
-    
-        <span class="thumbnail-image thumbnail-none"></span>
-    
-</a>
-
-                        </div>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"><a class="article-category-link" href="/categories/mysql/">mysql</a></p>
-                            <p class="item-title"><a href="/2018/01/01/数据库的基本操作/" class="title">数据库的基本操作</a></p>
-                            <p class="item-date"><time datetime="2018-01-01T11:59:06.000Z" itemprop="datePublished">2018-01-01</time></p>
-                        </div>
-                    </li>
-                
-            </ul>
-        </div>
-    </div>
-
-    
-        
-    <div class="widget-wrap">
-        <h3 class="widget-title">分类</h3>
-        <div class="widget">
-            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/mysql/">mysql</a><span class="category-list-count">1</span></li></ul>
-        </div>
-    </div>
-
-    
-        
-    <div class="widget-wrap">
-        <h3 class="widget-title">归档</h3>
-        <div class="widget">
-            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">一月 2018</a><span class="archive-list-count">1</span></li></ul>
-        </div>
-    </div>
-
-    
-        
-    <div class="widget-wrap">
-        <h3 class="widget-title">标签</h3>
-        <div class="widget">
-            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mysql/">Mysql</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/基本操作/">基本操作</a><span class="tag-list-count">1</span></li></ul>
-        </div>
-    </div>
-
-    
-        
-    <div class="widget-wrap">
-        <h3 class="widget-title">标签云</h3>
-        <div class="widget tagcloud">
-            <a href="/tags/Mysql/" style="font-size: 10px;">Mysql</a> <a href="/tags/基本操作/" style="font-size: 10px;">基本操作</a>
-        </div>
-    </div>
-
-    
-        
-    <div class="widget-wrap widget-list">
-        <h3 class="widget-title">链接</h3>
-        <div class="widget">
-            <ul>
-                
-                    <li>
-                        <a href="https://www.google.com.hk" target="_blank">Google</a>
-                    </li>
-                
-            </ul>
-        </div>
-    </div>
-
-
-    
-    <div id="toTop" class="fa fa-angle-up"></div>
-</aside>
-
-            
-        </div>
-        <footer id="footer">
-    <div class="outer">
-        <div id="footer-info" class="inner">
-            &copy; 2018 LiGang<br>
-            Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>. Theme by <a href="http://github.com/ppoffice">PPOffice</a>
-        </div>
-    </div>
-</footer>
-        
-    
-    
+        </li>
+    </ul>
+    <!-- 评论插件 -->
     <!-- 来必力City版安装代码 -->
-    <script type="text/javascript">
-     (function(d, s) {
-         var j, e = d.getElementsByTagName(s)[0];
 
-         if (typeof LivereTower === 'function') { return; }
+    <div id="lv-container" data-id="city" data-uid= MTAyMC8zNDE4Ni8xMDcyMw==>
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
 
-         j = d.createElement(s);
-         j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
-         j.async = true;
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
 
-         e.parentNode.insertBefore(j, e);
-     })(document, 'script');
-    </script>
-  <noscript> 为正常使用来必力评论功能请激活JavaScript</noscript>
-  <!-- City版安装代码已完成 -->
+<!-- City版安装代码已完成 -->
+    
+    
+    <!--PC版-->
 
-
-
+    <!--PC版-->
 
 
     
-        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
-        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
-        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
-        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
-        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
-        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
-        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
-        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
-        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
     
+    <div class="social">
+        
     
-        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+        
+            
+                <a href="mailto:15733207536@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
     
+        
+            
+                <a href="//github.com/lovemoganna" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
     
-
-
-
-<!-- Custom Scripts -->
-<script src="/js/main.js"></script>
+        
+            
+                <span class="iconfont-archer wechat" title=wechat>
+                  
+                  <img class="profile-qr" src="/assets/wechat.jpg" />
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
 
     </div>
-</body>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+        <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#RDBMS术语"><span class="toc-number">1.</span> <span class="toc-text">RDBMS术语</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mysql的数据类型"><span class="toc-number">2.</span> <span class="toc-text">mysql的数据类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#时间类型"><span class="toc-number">3.</span> <span class="toc-text">时间类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#字符串类型"><span class="toc-number">4.</span> <span class="toc-text">字符串类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建数据库"><span class="toc-number">5.</span> <span class="toc-text">创建数据库</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#使用此数据库"><span class="toc-number">5.1.</span> <span class="toc-text">使用此数据库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建数据库表"><span class="toc-number">5.2.</span> <span class="toc-text">创建数据库表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#删除数据表"><span class="toc-number">6.</span> <span class="toc-text">删除数据表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查看表的字段"><span class="toc-number">7.</span> <span class="toc-text">查看表的字段</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查看索引"><span class="toc-number">8.</span> <span class="toc-text">查看索引</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#索引类型"><span class="toc-number">9.</span> <span class="toc-text">索引类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建索引"><span class="toc-number">10.</span> <span class="toc-text">创建索引</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#删除索引"><span class="toc-number">11.</span> <span class="toc-text">删除索引</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#插入语句"><span class="toc-number">12.</span> <span class="toc-text">插入语句</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#update语句"><span class="toc-number">13.</span> <span class="toc-text">update语句</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#删除语句"><span class="toc-number">14.</span> <span class="toc-text">删除语句</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#模糊查询"><span class="toc-number">15.</span> <span class="toc-text">模糊查询</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Union操作符"><span class="toc-number">16.</span> <span class="toc-text">Union操作符</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#website表"><span class="toc-number">16.1.</span> <span class="toc-text">website表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#apps表"><span class="toc-number">16.2.</span> <span class="toc-text">apps表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#排序的使用-order-by"><span class="toc-number">17.</span> <span class="toc-text">排序的使用(order by)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#倒序查询"><span class="toc-number">17.1.</span> <span class="toc-text">倒序查询</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#正序查询"><span class="toc-number">17.2.</span> <span class="toc-text">正序查询</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Mysql的分组-group-by-查询"><span class="toc-number">18.</span> <span class="toc-text">Mysql的分组(group by)查询</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#步骤"><span class="toc-number">18.1.</span> <span class="toc-text">步骤:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#参考地址"><span class="toc-number">18.2.</span> <span class="toc-text">参考地址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#分组测试"><span class="toc-number">18.3.</span> <span class="toc-text">分组测试</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mysql连接的使用"><span class="toc-number">19.</span> <span class="toc-text">mysql连接的使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#我们来关联这3个表"><span class="toc-number">19.1.</span> <span class="toc-text">我们来关联这3个表:</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mysql-null-值处理"><span class="toc-number">20.</span> <span class="toc-text">mysql null 值处理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mysql的正则表达式"><span class="toc-number">21.</span> <span class="toc-text">mysql的正则表达式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Mysql的事务"><span class="toc-number">22.</span> <span class="toc-text">Mysql的事务</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#事务必须满足ACID这4个条件"><span class="toc-number">22.1.</span> <span class="toc-text">事务必须满足ACID这4个条件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#注意"><span class="toc-number">22.2.</span> <span class="toc-text">注意</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#事务控制语句"><span class="toc-number">22.3.</span> <span class="toc-text">事务控制语句</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Mysql事务处理主要有两种方法有2种方法"><span class="toc-number">22.4.</span> <span class="toc-text">Mysql事务处理主要有两种方法有2种方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#事务测试"><span class="toc-number">22.5.</span> <span class="toc-text">事务测试</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Alter命令"><span class="toc-number">23.</span> <span class="toc-text">Alter命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#删除-添加-或修改表字段"><span class="toc-number">23.1.</span> <span class="toc-text">删除,添加,或修改表字段.</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#索引"><span class="toc-number">24.</span> <span class="toc-text">索引</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#普通索引"><span class="toc-number">24.1.</span> <span class="toc-text">普通索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建索引-1"><span class="toc-number">24.2.</span> <span class="toc-text">创建索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#修改表结构-添加索引"><span class="toc-number">24.3.</span> <span class="toc-text">修改表结构(添加索引)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#删除索引的语法"><span class="toc-number">24.4.</span> <span class="toc-text">删除索引的语法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#唯一索引"><span class="toc-number">24.5.</span> <span class="toc-text">唯一索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建索引-2"><span class="toc-number">24.6.</span> <span class="toc-text">创建索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#修改表结构"><span class="toc-number">24.7.</span> <span class="toc-text">修改表结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#使用ALTER-命令添加和删除索引"><span class="toc-number">24.8.</span> <span class="toc-text">使用ALTER 命令添加和删除索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#使用-ALTER-命令添加和删除主键"><span class="toc-number">24.9.</span> <span class="toc-text">使用 ALTER 命令添加和删除主键</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#显示索引信息"><span class="toc-number">24.10.</span> <span class="toc-text">显示索引信息</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#临时表"><span class="toc-number">25.</span> <span class="toc-text">临时表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#删除临时表"><span class="toc-number">25.1.</span> <span class="toc-text">删除临时表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#复制表"><span class="toc-number">26.</span> <span class="toc-text">复制表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mysql的元数据"><span class="toc-number">27.</span> <span class="toc-text">mysql的元数据</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#获取查询语句影响的记录数"><span class="toc-number">27.1.</span> <span class="toc-text">获取查询语句影响的记录数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#数据库和数据表列表"><span class="toc-number">27.2.</span> <span class="toc-text">数据库和数据表列表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#获取服务器元数据"><span class="toc-number">27.3.</span> <span class="toc-text">获取服务器元数据</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mysql的序列"><span class="toc-number">28.</span> <span class="toc-text">mysql的序列</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#使用AUTO-INCREMENT"><span class="toc-number">28.1.</span> <span class="toc-text">使用AUTO_INCREMENT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#获取AUTO-INCREMENT值"><span class="toc-number">28.2.</span> <span class="toc-text">获取AUTO_INCREMENT值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#重置序列"><span class="toc-number">28.3.</span> <span class="toc-text">重置序列</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#设置序列的开始值"><span class="toc-number">28.4.</span> <span class="toc-text">设置序列的开始值</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MySQL-处理重复数据"><span class="toc-number">29.</span> <span class="toc-text">MySQL 处理重复数据</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#防止表中出现重复数据"><span class="toc-number">29.1.</span> <span class="toc-text">防止表中出现重复数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#统计重复数据"><span class="toc-number">29.2.</span> <span class="toc-text">统计重复数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#删除重复数据"><span class="toc-number">29.3.</span> <span class="toc-text">删除重复数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MySQL-及-SQL-注入"><span class="toc-number">29.4.</span> <span class="toc-text">MySQL 及 SQL 注入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#防止SQL注入"><span class="toc-number">29.5.</span> <span class="toc-text">防止SQL注入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Like语句中的注入"><span class="toc-number">29.6.</span> <span class="toc-text">Like语句中的注入</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-archive"> Total : 1 </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/数据库的基本操作/" >数据库的基本操作</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
+    
+        <span class="sidebar-tag-name" data-tags="增删改查"><span class="iconfont-archer">&#xe606;</span>增删改查</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="mysql"><span class="iconfont-archer">&#xe60a;</span>mysql</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: '/',
+        author: 'LiGang'
+    }
+</script>
+    <!-- busuanzi  -->
+    
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+    
+    </body>
 </html>
+
+
