@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html>
+    <!-- title -->
+
+
+
+
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
+    <title>Redis-cluster搭建 · LoveMorgana&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+        box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s 1;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= /css/style.css?v=20180317 as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" type="text/css" href= /css/mobile.css?v=20180317 media="(max-width: 980px)"/>
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        
+    <link rel="icon" href= /assets/favicon.ico>
+    <script>
+        (function (w) {
+            "use strict";
+            // rel=preload support test
+            if (!w.loadCSS) {
+                w.loadCSS = function () { };
+            }
+            // define on the loadCSS obj
+            var rp = loadCSS.relpreload = {};
+            // rel=preload feature support test
+            // runs once and returns a function for compat purposes
+            rp.support = (function () {
+                var ret;
+                try {
+                    ret = w.document.createElement("link").relList.supports("preload");
+                } catch (e) {
+                    ret = false;
+                }
+                return function () {
+                    return ret;
+                };
+            })();
+
+            // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+            // then change that media back to its intended value on load
+            rp.bindMediaToggle = function (link) {
+                // remember existing media attr for ultimate state, or default to 'all'
+                var finalMedia = link.media || "all";
+
+                function enableStylesheet() {
+                    link.media = finalMedia;
+                }
+
+                // bind load handlers to enable media
+                if (link.addEventListener) {
+                    link.addEventListener("load", enableStylesheet);
+                } else if (link.attachEvent) {
+                    link.attachEvent("onload", enableStylesheet);
+                }
+
+                // Set rel and non-applicable media type to start an async request
+                // note: timeout allows this to happen async to let rendering continue in IE
+                setTimeout(function () {
+                    link.rel = "stylesheet";
+                    link.media = "only x";
+                });
+                // also enable media after 3 seconds,
+                // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+                setTimeout(enableStylesheet, 3000);
+            };
+
+            // loop through link elements in DOM
+            rp.poly = function () {
+                // double check this to prevent external calls from running
+                if (rp.support()) {
+                    return;
+                }
+                var links = w.document.getElementsByTagName("link");
+                for (var i = 0; i < links.length; i++) {
+                    var link = links[i];
+                    // qualify links to those with rel=preload and as=style attrs
+                    if (link.rel === "preload" && link.getAttribute("as") === "style" && !link.getAttribute("data-loadcss")) {
+                        // prevent rerunning on link
+                        link.setAttribute("data-loadcss", true);
+                        // bind listeners to toggle media back
+                        rp.bindMediaToggle(link);
+                    }
+                }
+            };
+
+            // if unsupported, run the polyfill
+            if (!rp.support()) {
+                // run once at least
+                rp.poly();
+
+                // rerun poly on an interval until onload
+                var run = w.setInterval(rp.poly, 500);
+                if (w.addEventListener) {
+                    w.addEventListener("load", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                } else if (w.attachEvent) {
+                    w.attachEvent("onload", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                }
+            }
+            // commonjs
+            if (typeof exports !== "undefined") {
+                exports.loadCSS = loadCSS;
+            }
+            else {
+                w.loadCSS = loadCSS;
+            }
+        }(typeof global !== "undefined" ? global : this));
+    </script>
+    <script src="//cdn.staticfile.org/jquery/3.2.1/jquery.min.js" defer></script>
+    <script src="/scripts/main.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+    <script>
+        (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+        (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date(); a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+        ga('create', 'UA-113782861-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >LoveMorgana&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Redis-cluster搭建</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>LoveMorgana's Blog</a>
+</header>
+
+    <div class="wrapper">
+        <div class="site-intro" style=
+
+
+
+
+
+
+
+
+height:50vh;
+
+>
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Redis-cluster搭建
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <!-- 文章页标签  -->
+            
+                <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Redis">Redis</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Redis-cluster">Redis-cluster</a>
+    
+</div>
+            
+            <div class="post-intro-meta">
+                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                <span class="post-intro-time">2018/02/25</span>
+                
+                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                    <span class="iconfont-archer">&#xe602;</span>
+                    <span id="busuanzi_value_page_pv"></span>
+                </span>
+                
+                <span class="shareWrapper">
+                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                    <span class="shareText">Share</span>
+                    <ul class="shareList">
+                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                            <div class="share-qrcode"></div>
+                        </li>
+                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                    </ul>
+                </span>
+            </div>
+        
+    </div>
+</div>
+        <script>
+  // load webfont-loader async, and add callback function
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+  
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntroTags = document.getElementsByClassName('post-intro-tags')[0],
+        postIntroMeat = document.getElementsByClassName('post-intro-meta')[0];
+      if (postIntroTags) {
+        postIntroTags.classList.add('post-fade-in');
+      }
+      if (postIntroMeat) {
+        postIntroMeat.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  async("https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", asyncCb)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="Redis集群搭建使用的包"><a href="#Redis集群搭建使用的包" class="headerlink" title="Redis集群搭建使用的包"></a>Redis集群搭建使用的包</h2><p><img src="http://upload-images.jianshu.io/upload_images/7505161-e81ad3dab8dbd9fe.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<h2 id="Redis-集群的原理"><a href="#Redis-集群的原理" class="headerlink" title="Redis 集群的原理"></a>Redis 集群的原理</h2><p><a href="https://www.jianshu.com/p/2177874695c4" target="_blank" rel="noopener">redis单机版的操作</a></p>
+<h3 id="Redis-cluster的架构"><a href="#Redis-cluster的架构" class="headerlink" title="Redis-cluster的架构"></a>Redis-cluster的架构</h3><p><img src="http://upload-images.jianshu.io/upload_images/7505161-35c6a3e1a08a08a0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>redis-cluster有一个投票:容错机制,用来确定是哪个节点挂了.少数服从多数.</p>
+<p>比如下面这张图:</p>
+<p>有5个节点,黄色的节点认为红色的节点挂了,只要剩下的3个节点有2个认为它挂了,那么红色的就认为挂了.</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-7568ca9150bc5eb3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>架构的细节</strong></p>
+<p>1.所有的redis节点彼此互联(PING-PONG机制),内部使用2进制协议优化传输速度和带宽.</p>
+<p>2.节点的fail是通过集群中超过半数的节点监测失效时才生效.</p>
+<p>3.客户端与redis节点直连,不需要中间proxy层,客户端不需要连接集群所有节点,连接集群中任何一个节点即可.</p>
+<p>4.redis-cluster把所有的物理节点映射到[0-16383]slot上,cluster负责维护node-slot–value</p>
+<blockquote>
+<p>redis集群中内置了16384个哈希槽,当需要在redis集群中放置一个key-value的时候,redis先对key使用crc16算法算出一个结果.<br>然后把结果对16384取余,这样每个key都会对应一个编号在0-16383之间的哈希槽,redis会根据节点数量大致均等的将哈希槽映射到不同的节点.</p>
+</blockquote>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-91fffabab7103de4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>极限情况下,允许有16384个节点.</p>
+<h2 id="redis集群的搭建步骤"><a href="#redis集群的搭建步骤" class="headerlink" title="redis集群的搭建步骤"></a>redis集群的搭建步骤</h2><p>1.一台虚拟机运行6个redis实例.端口从7001-7006.</p>
+<p>2.复制redis实例,复制目录需要<code>-r</code></p>
+<p><code>cp redis/bin redis-cluster/redis01 -r</code></p>
+<p>进入<code>cd redis-cluster/redis01</code>中将持久化文件<code>dump</code>删除,不删除会对我们的集群造成影响.</p>
+<p>接下来,修改<code>bin</code>目录下的<code>redis.conf</code>文件.主要修改<code>端口号</code>和<code>打开注释</code>.</p>
+<p><strong>修改端口号</strong>:<code>port 7001</code></p>
+<p><strong>打开注释</strong></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-94046664c79fd963.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>接下来修改剩余的5个.</p>
+<p>3.写脚本启动<code>start-all.sh</code><br><figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cd</span> redis01</span><br><span class="line"><span class="string">./redis-server</span> redis.conf</span><br><span class="line"><span class="keyword">cd</span> <span class="string">..</span></span><br><span class="line"><span class="keyword">cd</span> redis02</span><br><span class="line"><span class="string">./redis-server</span> redis.conf</span><br><span class="line"><span class="keyword">cd</span> <span class="string">..</span></span><br><span class="line"><span class="keyword">cd</span> redis03</span><br><span class="line"><span class="string">./redis-server</span> redis.conf</span><br><span class="line"><span class="keyword">cd</span> <span class="string">..</span></span><br><span class="line"><span class="keyword">cd</span> redis04</span><br><span class="line"><span class="string">./redis-server</span> redis.conf</span><br><span class="line"><span class="keyword">cd</span> <span class="string">..</span></span><br><span class="line"><span class="keyword">cd</span> redis05</span><br><span class="line"><span class="string">./redis-server</span> redis.conf</span><br><span class="line"><span class="keyword">cd</span> <span class="string">..</span></span><br><span class="line"><span class="keyword">cd</span> redis06</span><br><span class="line"><span class="string">./redis-server</span> redis.conf</span><br></pre></td></tr></table></figure></p>
+<p>无法启动,是因为需要授权的.</p>
+<p><code>chmod u+x start-all.sh</code></p>
+<p>4.查看是否启动</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-0064e1761e1535c4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>5.进入redis源代码里面找一个文件</p>
+<p>也就是在<code>`/root/redis-4.0.8/src目录下去寻找.使用</code>ll *.rb<code>会找到</code>redis-trib.rb`这个文件.</p>
+<p>将这个文件复制到<code>/usr/local/redis-cluster</code>这个目录中.</p>
+<p>现在的目录结构:</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-5dbfaea302e681c0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>6.安装ruby环境<br><code>yum install ruby</code><br><br><code>yum install rubygems</code></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-225c22e64e190848.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>输入你失败提示的那个的地址,去浏览器下载<code>specs.4.8.gz</code>这个文件,,输入<code>gem install redis</code>就能成功了.</p>
+<p>7.ruby脚本</p>
+<p><code>./redis-trib.rb create --replicas 1 192.168.25.133:7001 192.168.25.133:7002 192.168.25.133:7003 192.168.25.133:7004 192.168.25.133:7005 192.168.25.133:7006</code></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-b08fbbac48ee56c0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>8.查看分配的主从服务器,以及槽的分配</p>
+<figure class="highlight x86asm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost redis-cluster]# ./redis-trib.rb create --replicas <span class="number">1</span> <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7001</span> <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7002</span> <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7003</span> <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7004</span> <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7005</span> <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7006</span></span><br><span class="line">&gt;&gt;&gt; Creating cluster</span><br><span class="line">&gt;&gt;&gt; Performing hash slots allocation on <span class="number">6</span> nodes...</span><br><span class="line">Using <span class="number">3</span> masters:</span><br><span class="line"><span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7001</span></span><br><span class="line"><span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7002</span></span><br><span class="line"><span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7003</span></span><br><span class="line">Adding replica <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7005</span> to <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7001</span></span><br><span class="line">Adding replica <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7006</span> to <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7002</span></span><br><span class="line">Adding replica <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7004</span> to <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7003</span></span><br><span class="line">&gt;&gt;&gt; Trying to optimize slaves allocation for anti-affinity</span><br><span class="line">[WARNING] Some slaves are <span class="keyword">in</span> the same host as their master</span><br><span class="line"><span class="symbol">M:</span> f525a4b2a3ff6cc32a36f276b17460910ac6334f <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7001</span></span><br><span class="line"><span class="symbol">   slots:</span><span class="number">0</span>-<span class="number">5460</span> (<span class="number">5461</span> slots) master</span><br><span class="line"><span class="symbol">M:</span> f865949d32a241285032a900ea0911859f83c44e <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7002</span></span><br><span class="line"><span class="symbol">   slots:</span><span class="number">5461</span>-<span class="number">10922</span> (<span class="number">5462</span> slots) master</span><br><span class="line"><span class="symbol">M:</span> db89b6f29ffa891ab166a39fb6101be99b763859 <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7003</span></span><br><span class="line"><span class="symbol">   slots:</span><span class="number">10923</span>-<span class="number">16383</span> (<span class="number">5461</span> slots) master</span><br><span class="line"><span class="symbol">S:</span> b53df7de4aeb85751e64ec95743628a8387acf2c <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7004</span></span><br><span class="line">   replicates db89b6f29ffa891ab166a39fb6101be99b763859</span><br><span class="line"><span class="symbol">S:</span> af12ed12992d8c15057a356d299edac4a4b630fc <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7005</span></span><br><span class="line">   replicates f525a4b2a3ff6cc32a36f276b17460910ac6334f</span><br><span class="line"><span class="symbol">S:</span> 10189b284f51732b5a64aea3f9c8e7f545db9059 <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7006</span></span><br><span class="line">   replicates f865949d32a241285032a900ea0911859f83c44e</span><br><span class="line">Can I set the above configuration? (type <span class="string">'yes'</span> to accept): yes</span><br><span class="line">&gt;&gt;&gt; Nodes configuration updated</span><br><span class="line">&gt;&gt;&gt; Assign a different config epoch to <span class="number">each</span> node</span><br><span class="line">&gt;&gt;&gt; Sending CLUSTER MEET messages to join the cluster</span><br><span class="line">Waiting for the cluster to join....</span><br><span class="line">&gt;&gt;&gt; Performing Cluster Check (using node <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7001</span>)</span><br><span class="line"><span class="symbol">M:</span> f525a4b2a3ff6cc32a36f276b17460910ac6334f <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7001</span></span><br><span class="line"><span class="symbol">   slots:</span><span class="number">0</span>-<span class="number">5460</span> (<span class="number">5461</span> slots) master</span><br><span class="line">   <span class="number">1</span> additional replica(s)</span><br><span class="line"><span class="symbol">M:</span> f865949d32a241285032a900ea0911859f83c44e <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7002</span></span><br><span class="line"><span class="symbol">   slots:</span><span class="number">5461</span>-<span class="number">10922</span> (<span class="number">5462</span> slots) master</span><br><span class="line">   <span class="number">1</span> additional replica(s)</span><br><span class="line"><span class="symbol">M:</span> db89b6f29ffa891ab166a39fb6101be99b763859 <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7003</span></span><br><span class="line"><span class="symbol">   slots:</span><span class="number">10923</span>-<span class="number">16383</span> (<span class="number">5461</span> slots) master</span><br><span class="line">   <span class="number">1</span> additional replica(s)</span><br><span class="line"><span class="symbol">S:</span> af12ed12992d8c15057a356d299edac4a4b630fc <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7005</span></span><br><span class="line"><span class="symbol">   slots:</span> (<span class="number">0</span> slots) slave</span><br><span class="line">   replicates f525a4b2a3ff6cc32a36f276b17460910ac6334f</span><br><span class="line"><span class="symbol">S:</span> 10189b284f51732b5a64aea3f9c8e7f545db9059 <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7006</span></span><br><span class="line"><span class="symbol">   slots:</span> (<span class="number">0</span> slots) slave</span><br><span class="line">   replicates f865949d32a241285032a900ea0911859f83c44e</span><br><span class="line"><span class="symbol">S:</span> b53df7de4aeb85751e64ec95743628a8387acf2c <span class="number">192.168</span><span class="meta">.25</span><span class="meta">.133</span>:<span class="number">7004</span></span><br><span class="line"><span class="symbol">   slots:</span> (<span class="number">0</span> slots) slave</span><br><span class="line">   replicates db89b6f29ffa891ab166a39fb6101be99b763859</span><br><span class="line">[OK] All nodes agree about slots configuration.</span><br><span class="line">&gt;&gt;&gt; Check for open slots...</span><br><span class="line">&gt;&gt;&gt; Check slots coverage...</span><br><span class="line">[OK] All <span class="number">16384</span> slots covered.</span><br></pre></td></tr></table></figure>
+    </article>
+    <!-- 前后页  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2018/02/28/mysql设计以及架构优化/" title= mysql设计以及架构优化 >
+                    <div class="nextTitle">mysql设计以及架构优化</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2018/02/24/Redis集群接口/" title= Redis接口的编写 >
+                    <div class="prevTitle">Redis接口的编写</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid= MTAyMC8zNDE4Ni8xMDcyMw==>
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!--PC版-->
+
+    <!--PC版-->
+
+
+    
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:15733207536@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/lovemoganna" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title=wechat>
+                  
+                  <img class="profile-qr" src="/assets/wechat.jpg" />
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/luoyupiaoshang" class="iconfont-archer twitter" target="_blank" title=twitter></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://luoyupiaoshang.club/" target="_blank">luoyupiaoshang</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+        <span id="busuanzi_container_site_pv">访问总计 <span id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+    
+</footer>
+
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis集群搭建使用的包"><span class="toc-number">1.</span> <span class="toc-text">Redis集群搭建使用的包</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis-集群的原理"><span class="toc-number">2.</span> <span class="toc-text">Redis 集群的原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Redis-cluster的架构"><span class="toc-number">2.1.</span> <span class="toc-text">Redis-cluster的架构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#redis集群的搭建步骤"><span class="toc-number">3.</span> <span class="toc-text">redis集群的搭建步骤</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">归档</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">标签</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">分类</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-archive"> Total : 25 </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/03</span><a class="archive-post-title" href= "/2018/04/03/interview/" >李刚_产品经理实习生</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/28</span><a class="archive-post-title" href= "/2018/02/28/mysql设计以及架构优化/" >mysql设计以及架构优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/25</span><a class="archive-post-title" href= "/2018/02/25/Redis集群的搭建/" >Redis-cluster搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/redis/" >Redis基本操作</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/spring和redis整合/" >Spring与Redis整合</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/Redis集群接口/" >Redis接口的编写</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/22</span><a class="archive-post-title" href= "/2018/02/22/DB02-数据库字段设计规范/" >DB02-数据库字段设计规范</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span><a class="archive-post-title" href= "/2018/02/01/mysql日志划分/" >mysql服务器日志</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/27</span><a class="archive-post-title" href= "/2018/01/27/选择常规查询和慢速查询日志的输出目的地/" >选择常规查询和慢速查询日志的输出目的地</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span><a class="archive-post-title" href= "/2018/01/25/集群环境中解决Session共享问题/" >集群环境中解决Session共享问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/24</span><a class="archive-post-title" href= "/2018/01/24/ajax跨域问题/" >ajax跨域问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/09</span><a class="archive-post-title" href= "/2018/01/09/WebCrawler/" >WebCrawler-网络爬虫01</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/08</span><a class="archive-post-title" href= "/2018/01/08/区块链/" >区块链(Blockchain)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀Web层开发/" >秒杀web层开发</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀service层开发/" >秒杀Service层开发</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀高并发优化/" >秒杀高并发优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/Markdown/" >markdown语法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/秒杀概述/" >秒杀概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/数据库的基本操作/" >数据库的基本操作</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/秒杀Dao层开发/" >秒杀Dao层开发</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2017 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/apringData-01/" >springData-01</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/SpringData-02/" >springData-02</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/SpringData-03/" >springData-03</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href= "/2017/11/09/springboot/" >SpringBoot初识</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href= "/2017/11/09/Spring事务/" >Spring事务</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="mysql设计"><span class="iconfont-archer">&#xe606;</span>mysql设计</span>
+    
+        <span class="sidebar-tag-name" data-tags="springdata"><span class="iconfont-archer">&#xe606;</span>springdata</span>
+    
+        <span class="sidebar-tag-name" data-tags="Redis"><span class="iconfont-archer">&#xe606;</span>Redis</span>
+    
+        <span class="sidebar-tag-name" data-tags="Redis-cluster"><span class="iconfont-archer">&#xe606;</span>Redis-cluster</span>
+    
+        <span class="sidebar-tag-name" data-tags="markdown"><span class="iconfont-archer">&#xe606;</span>markdown</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="Transaction"><span class="iconfont-archer">&#xe606;</span>Transaction</span>
+    
+        <span class="sidebar-tag-name" data-tags="爬虫的原理"><span class="iconfont-archer">&#xe606;</span>爬虫的原理</span>
+    
+        <span class="sidebar-tag-name" data-tags="爬虫架构"><span class="iconfont-archer">&#xe606;</span>爬虫架构</span>
+    
+        <span class="sidebar-tag-name" data-tags="Session共享"><span class="iconfont-archer">&#xe606;</span>Session共享</span>
+    
+        <span class="sidebar-tag-name" data-tags="个人简历"><span class="iconfont-archer">&#xe606;</span>个人简历</span>
+    
+        <span class="sidebar-tag-name" data-tags="实习生"><span class="iconfont-archer">&#xe606;</span>实习生</span>
+    
+        <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
+    
+        <span class="sidebar-tag-name" data-tags="ServiceLog"><span class="iconfont-archer">&#xe606;</span>ServiceLog</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构优化"><span class="iconfont-archer">&#xe606;</span>架构优化</span>
+    
+        <span class="sidebar-tag-name" data-tags="FT中文网"><span class="iconfont-archer">&#xe606;</span>FT中文网</span>
+    
+        <span class="sidebar-tag-name" data-tags="区块链"><span class="iconfont-archer">&#xe606;</span>区块链</span>
+    
+        <span class="sidebar-tag-name" data-tags="SSM"><span class="iconfont-archer">&#xe606;</span>SSM</span>
+    
+        <span class="sidebar-tag-name" data-tags="Web"><span class="iconfont-archer">&#xe606;</span>Web</span>
+    
+        <span class="sidebar-tag-name" data-tags="Bootstrap"><span class="iconfont-archer">&#xe606;</span>Bootstrap</span>
+    
+        <span class="sidebar-tag-name" data-tags="Service"><span class="iconfont-archer">&#xe606;</span>Service</span>
+    
+        <span class="sidebar-tag-name" data-tags="增删改查"><span class="iconfont-archer">&#xe606;</span>增删改查</span>
+    
+        <span class="sidebar-tag-name" data-tags="RowsLock"><span class="iconfont-archer">&#xe606;</span>RowsLock</span>
+    
+        <span class="sidebar-tag-name" data-tags="高并发"><span class="iconfont-archer">&#xe606;</span>高并发</span>
+    
+        <span class="sidebar-tag-name" data-tags="SpringBoot"><span class="iconfont-archer">&#xe606;</span>SpringBoot</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="mysql"><span class="iconfont-archer">&#xe60a;</span>mysql</span>
+    
+        <span class="sidebar-category-name" data-categories="spring"><span class="iconfont-archer">&#xe60a;</span>spring</span>
+    
+        <span class="sidebar-category-name" data-categories="Redis"><span class="iconfont-archer">&#xe60a;</span>Redis</span>
+    
+        <span class="sidebar-category-name" data-categories="Seckill"><span class="iconfont-archer">&#xe60a;</span>Seckill</span>
+    
+        <span class="sidebar-category-name" data-categories="SpringBoot"><span class="iconfont-archer">&#xe60a;</span>SpringBoot</span>
+    
+        <span class="sidebar-category-name" data-categories="区块链-Blockchain"><span class="iconfont-archer">&#xe60a;</span>区块链-Blockchain</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div>
+
+    <script>
+    var siteMeta = {
+        root: '/',
+        author: 'LiGang'
+    }
+</script>
+    <!-- busuanzi  -->
+    
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+    
+    </body>
+</html>
+
+

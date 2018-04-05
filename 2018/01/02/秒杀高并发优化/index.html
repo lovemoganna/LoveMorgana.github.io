@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html>
+    <!-- title -->
+
+
+
+
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
+    <title>秒杀高并发优化 · LoveMorgana&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+        box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s 1;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= /css/style.css?v=20180317 as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" type="text/css" href= /css/mobile.css?v=20180317 media="(max-width: 980px)"/>
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        
+    <link rel="icon" href= /assets/favicon.ico>
+    <script>
+        (function (w) {
+            "use strict";
+            // rel=preload support test
+            if (!w.loadCSS) {
+                w.loadCSS = function () { };
+            }
+            // define on the loadCSS obj
+            var rp = loadCSS.relpreload = {};
+            // rel=preload feature support test
+            // runs once and returns a function for compat purposes
+            rp.support = (function () {
+                var ret;
+                try {
+                    ret = w.document.createElement("link").relList.supports("preload");
+                } catch (e) {
+                    ret = false;
+                }
+                return function () {
+                    return ret;
+                };
+            })();
+
+            // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+            // then change that media back to its intended value on load
+            rp.bindMediaToggle = function (link) {
+                // remember existing media attr for ultimate state, or default to 'all'
+                var finalMedia = link.media || "all";
+
+                function enableStylesheet() {
+                    link.media = finalMedia;
+                }
+
+                // bind load handlers to enable media
+                if (link.addEventListener) {
+                    link.addEventListener("load", enableStylesheet);
+                } else if (link.attachEvent) {
+                    link.attachEvent("onload", enableStylesheet);
+                }
+
+                // Set rel and non-applicable media type to start an async request
+                // note: timeout allows this to happen async to let rendering continue in IE
+                setTimeout(function () {
+                    link.rel = "stylesheet";
+                    link.media = "only x";
+                });
+                // also enable media after 3 seconds,
+                // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+                setTimeout(enableStylesheet, 3000);
+            };
+
+            // loop through link elements in DOM
+            rp.poly = function () {
+                // double check this to prevent external calls from running
+                if (rp.support()) {
+                    return;
+                }
+                var links = w.document.getElementsByTagName("link");
+                for (var i = 0; i < links.length; i++) {
+                    var link = links[i];
+                    // qualify links to those with rel=preload and as=style attrs
+                    if (link.rel === "preload" && link.getAttribute("as") === "style" && !link.getAttribute("data-loadcss")) {
+                        // prevent rerunning on link
+                        link.setAttribute("data-loadcss", true);
+                        // bind listeners to toggle media back
+                        rp.bindMediaToggle(link);
+                    }
+                }
+            };
+
+            // if unsupported, run the polyfill
+            if (!rp.support()) {
+                // run once at least
+                rp.poly();
+
+                // rerun poly on an interval until onload
+                var run = w.setInterval(rp.poly, 500);
+                if (w.addEventListener) {
+                    w.addEventListener("load", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                } else if (w.attachEvent) {
+                    w.attachEvent("onload", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                }
+            }
+            // commonjs
+            if (typeof exports !== "undefined") {
+                exports.loadCSS = loadCSS;
+            }
+            else {
+                w.loadCSS = loadCSS;
+            }
+        }(typeof global !== "undefined" ? global : this));
+    </script>
+    <script src="//cdn.staticfile.org/jquery/3.2.1/jquery.min.js" defer></script>
+    <script src="/scripts/main.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+    <script>
+        (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+        (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date(); a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+        ga('create', 'UA-113782861-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >LoveMorgana&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">秒杀高并发优化</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>LoveMorgana's Blog</a>
+</header>
+
+    <div class="wrapper">
+        <div class="site-intro" style=
+
+
+
+
+
+
+
+
+height:50vh;
+
+>
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            秒杀高并发优化
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <!-- 文章页标签  -->
+            
+                <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Redis">Redis</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "RowsLock">RowsLock</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "高并发">高并发</a>
+    
+</div>
+            
+            <div class="post-intro-meta">
+                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                <span class="post-intro-time">2018/01/02</span>
+                
+                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                    <span class="iconfont-archer">&#xe602;</span>
+                    <span id="busuanzi_value_page_pv"></span>
+                </span>
+                
+                <span class="shareWrapper">
+                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                    <span class="shareText">Share</span>
+                    <ul class="shareList">
+                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                            <div class="share-qrcode"></div>
+                        </li>
+                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                    </ul>
+                </span>
+            </div>
+        
+    </div>
+</div>
+        <script>
+  // load webfont-loader async, and add callback function
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+  
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntroTags = document.getElementsByClassName('post-intro-tags')[0],
+        postIntroMeat = document.getElementsByClassName('post-intro-meta')[0];
+      if (postIntroTags) {
+        postIntroTags.classList.add('post-fade-in');
+      }
+      if (postIntroMeat) {
+        postIntroMeat.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  async("https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", asyncCb)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="高并发发生的位置"><a href="#高并发发生的位置" class="headerlink" title="高并发发生的位置"></a>高并发发生的位置</h2><p>图示:</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-85e9859248fa7aea.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>红色: 可能出现高并发.</p>
+<p>绿色: 忽略不计</p>
+<h3 id="详情页的分析"><a href="#详情页的分析" class="headerlink" title="详情页的分析"></a>详情页的分析</h3><p>秒杀时间要到的时候,用户会自然而然的刷新秒杀页面.</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-66a70a1083881608.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<h3 id="CDN的理解"><a href="#CDN的理解" class="headerlink" title="CDN的理解"></a>CDN的理解</h3><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">1. </span>CDN(内部分发网络)加速用户获取数据的系统</span><br><span class="line"><span class="bullet">2. </span>部署在里用户最近的网络节点上</span><br><span class="line"><span class="bullet">3. </span>命中CDN不需要访问后端服务器</span><br><span class="line"><span class="bullet">4. </span>互联网公司有自己搭建或者租用</span><br></pre></td></tr></table></figure>
+<h3 id="系统时间优不优化"><a href="#系统时间优不优化" class="headerlink" title="系统时间优不优化?"></a>系统时间优不优化?</h3><p>运行一次内存(Cacheline)大约10ns(可忽略不计)</p>
+<p>我们单独获取系统时间,在Controller里面做了一个接口.</p>
+<h3 id="秒杀地址接口分析"><a href="#秒杀地址接口分析" class="headerlink" title="秒杀地址接口分析"></a>秒杀地址接口分析</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1. 无法使用CDN缓存</span><br><span class="line">2. 适合服务器端缓存:Redis等</span><br><span class="line">3. 一致性维护成本低</span><br></pre></td></tr></table></figure>
+<h3 id="秒杀地址接口优化"><a href="#秒杀地址接口优化" class="headerlink" title="秒杀地址接口优化"></a>秒杀地址接口优化</h3><p>存在的问题:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1. 无法使用CDN缓存(用的别人的)</span><br><span class="line">2. 后端缓存困难:库存问题</span><br><span class="line">3. 一行数据竞争:热点商品</span><br></pre></td></tr></table></figure></p>
+<p>解决方式:</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-64ea52ab89b2a6fa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<hr>
+<h3 id="其他方案分析"><a href="#其他方案分析" class="headerlink" title="其他方案分析"></a>其他方案分析</h3><p><img src="http://upload-images.jianshu.io/upload_images/7505161-6071abed5a124f26.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<h3 id="成本分析"><a href="#成本分析" class="headerlink" title="成本分析"></a>成本分析</h3><p><img src="http://upload-images.jianshu.io/upload_images/7505161-a47c7fe04bb002d7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<h3 id="mysqlUpdate测试"><a href="#mysqlUpdate测试" class="headerlink" title="mysqlUpdate测试"></a>mysqlUpdate测试</h3><p><img src="http://upload-images.jianshu.io/upload_images/7505161-d2460fc0b5c35b4e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>mysqlUpdate压力测试:同一个商品1S钟可以被卖4W次<br>但是我们并不使用mysql来解决高并发的问题,一般认为mysql比较低效.</p>
+<h3 id="java控制事务行为的分析"><a href="#java控制事务行为的分析" class="headerlink" title="java控制事务行为的分析"></a>java控制事务行为的分析</h3><p>以一条更新语句为例:</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-583d887d4ab61903.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>当所有人都去购买同一个商品的时候,都执行update操作,这样会造成用户阻塞,当排队排在最前的用户commit的时候,后面的用户才能执行update,会存在串行化的问题.</p>
+<p>只有上一条更新操作commit的时候,下一条update SQL语句,获得行锁,才能执行更新操作.</p>
+<p>行级锁是在Commit之后释放.</p>
+<h3 id="高并发的难点所在"><a href="#高并发的难点所在" class="headerlink" title="高并发的难点所在"></a>高并发的难点所在</h3><p><img src="http://upload-images.jianshu.io/upload_images/7505161-f50b353a03de31d3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>行级锁在Commit提交之后释放,要想办法减少行级锁持有的时间.</p>
+<p>但是大部分的MySQL数据库都是云服务,部署在异地机房,就有有传播延迟,实际约20ms.</p>
+<p>所以<strong>延迟问题</strong>也会造成行锁释放需要的时间更加长.</p>
+<p>比如下图:</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-aa7ef35e2860cb2e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<h3 id="判断Update更新库存成功"><a href="#判断Update更新库存成功" class="headerlink" title="判断Update更新库存成功"></a>判断Update更新库存成功</h3><p>有两个条件:<br>– update自身运行没出错<br>– 客户端确认Update影响记录数</p>
+<p>– 优化方法:</p>
+<pre><code>把客户端逻辑放到Mysql服务端.避免网络延迟和GC影响.
+</code></pre><p>将客户端逻辑放到Mysql服务端的方法:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">1. 定制Mysql方案:update/*+[auto_commit]*/,需要修改mysql的源码</span><br><span class="line">2. 使用存储过程:整个事务在Mysql端完成.</span><br><span class="line">````   </span><br><span class="line">### 总结</span><br><span class="line">* 前端控制暴露接口,按钮防止重复.</span><br><span class="line">* 动静态数据分离:CDN缓存,后端缓存.</span><br><span class="line">* 事务竞争优化:减少事务锁时间.</span><br><span class="line"></span><br><span class="line">## Redis的使用</span><br><span class="line">```androiddatabinding</span><br><span class="line">使用redis优化地址暴露接口</span><br><span class="line">make</span><br><span class="line">make install </span><br><span class="line">-- 需要GCC的环境</span><br><span class="line">redis-server</span><br><span class="line">集群环境下的查看监控日志:</span><br><span class="line">redis-sentinel sentinel.conf</span><br><span class="line"></span><br><span class="line">加入pom.xml依赖</span><br><span class="line">&lt;!--Redis客户端的支持--&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">      &lt;groupId&gt;redis.clients&lt;/groupId&gt;</span><br><span class="line">      &lt;artifactId&gt;jedis&lt;/artifactId&gt;</span><br><span class="line">      &lt;version&gt;2.7.2&lt;/version&gt;</span><br><span class="line">    &lt;/dependency&gt;</span><br></pre></td></tr></table></figure></p>
+<h2 id="Redis后端缓存优化"><a href="#Redis后端缓存优化" class="headerlink" title="Redis后端缓存优化"></a>Redis后端缓存优化</h2><p>我们知道在<strong>暴露接口</strong>的实现发过程中,我们是使用主键查询的方式来工作的,这样访问速度很快.<br>但是频繁的访问数据库,给我们的服务器造成了很大的压力.</p>
+<p>我们希望Redis来做缓存,来降低访问数据库的压力.</p>
+<h2 id="优化编码"><a href="#优化编码" class="headerlink" title="优化编码"></a>优化编码</h2><p>优化的是秒杀暴露接口,就是通过Id去查询商品的那个方法.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure></p>
+<p>传输的就是二进制的数据,所以需要将对象序列化.</p>
+<p>一般在实体上implements serializable,这是jdk自带的序列话机制.</p>
+<p><a href="https://github.com/eishay/jvm-serializers/wiki" target="_blank" rel="noopener">JVM 性能比对.</a></p>
+<figure class="highlight gcode"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">采用自定义序列化<span class="comment">(protostuff)</span></span><br><span class="line"></span><br><span class="line">把我们的对象转换为二进制的数组<span class="comment">(字节数组)</span>存到Redis当中.</span><br></pre></td></tr></table></figure>
+<h3 id="protostuff序列化的依赖"><a href="#protostuff序列化的依赖" class="headerlink" title="protostuff序列化的依赖"></a>protostuff序列化的依赖</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&lt;!--ProtoStuff的序列化依赖--&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">      &lt;groupId&gt;com.dyuproject.protostuff&lt;/groupId&gt;</span><br><span class="line">      &lt;artifactId&gt;protostuff-core&lt;/artifactId&gt;</span><br><span class="line">      &lt;version&gt;1.0.8&lt;/version&gt;</span><br><span class="line">    &lt;/dependency&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">      &lt;groupId&gt;com.dyuproject.protostuff&lt;/groupId&gt;</span><br><span class="line">      &lt;artifactId&gt;protostuff-runtime&lt;/artifactId&gt;</span><br><span class="line">      &lt;version&gt;1.0.8&lt;/version&gt;</span><br><span class="line">    &lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="添加Redis服务"><a href="#添加Redis服务" class="headerlink" title="添加Redis服务"></a>添加Redis服务</h3><figure class="highlight processing"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 缓存优化</span></span><br><span class="line"><span class="comment"> * get from cache</span></span><br><span class="line"><span class="comment"> * if null</span></span><br><span class="line"><span class="comment"> * getdb</span></span><br><span class="line"><span class="comment"> * else</span></span><br><span class="line"><span class="comment"> * put cache</span></span><br><span class="line"><span class="comment"> * locgoin</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> class RedisDao &#123;</span><br><span class="line">    <span class="keyword">private</span> JedisPool jedisPool;</span><br><span class="line">    <span class="keyword">private</span> Logger logger = LoggerFactory.getLogger(<span class="keyword">this</span>.getClass());</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 传入地址&amp;&amp;端口</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * @param ip</span></span><br><span class="line"><span class="comment">     * @param port</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> RedisDao(<span class="keyword">String</span> ip, <span class="built_in">int</span> port) &#123;</span><br><span class="line">        jedisPool = <span class="keyword">new</span> JedisPool(ip, port);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 通过类的字节码对象创建,</span></span><br><span class="line"><span class="comment">     * 通过类的反射可以拿到类有什么属性,哪些方法.</span></span><br><span class="line"><span class="comment">     * RunTimeSchema就是基于类的属性去做一个模式.</span></span><br><span class="line"><span class="comment">     * 创建对象的时候,会根据模式赋予相应的值.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> RuntimeSchema&lt;Seckill&gt; schema = RuntimeSchema.createFrom(Seckill.class);</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 取出Seckill</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * @param seckillId</span></span><br><span class="line"><span class="comment">     * @return</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> Seckill getSeckill(<span class="keyword">long</span> seckillId) &#123;</span><br><span class="line">        <span class="comment">//Redis缓存的逻辑:先拿到对象,判断对象是否存在,将其反序列化成对象.</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Jedis jedis = jedisPool.getResource();</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">//前缀+值的模式</span></span><br><span class="line">                <span class="keyword">String</span> <span class="built_in">key</span> = <span class="string">"seckill:"</span> + seckillId;</span><br><span class="line">                <span class="comment">//但并没有实现内部序列化操作</span></span><br><span class="line">                <span class="comment">//get--&gt;byte[]--&gt;反序列化--&gt;Object[Seckill]</span></span><br><span class="line">                <span class="built_in">byte</span>[] bytes = jedis.<span class="built_in">get</span>(<span class="built_in">key</span>.getBytes());</span><br><span class="line">                <span class="keyword">if</span> (bytes != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    <span class="comment">//就将这个字节数组利用protostuff序列化</span></span><br><span class="line">                    <span class="comment">//创建一个空对象</span></span><br><span class="line">                    Seckill seckill = schema.newMessage();</span><br><span class="line">                    <span class="comment">//按照schema把数据传输到空对象里面去</span></span><br><span class="line">                    ProtostuffIOUtil.mergeFrom(bytes,seckill,schema);</span><br><span class="line">                    <span class="comment">//seckill被反序列化,空间压缩到原生jdk处理的十分之一,压缩速度快,节省了CPU.</span></span><br><span class="line">                    <span class="keyword">return</span> seckill;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                jedis.close();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            logger.error(e.getMessage(), e);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 往里面防止Seckill对象</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * @param seckill</span></span><br><span class="line"><span class="comment">     * @return</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">String</span> putSeckill(Seckill seckill) &#123;</span><br><span class="line">        <span class="comment">//set Object[Seckill] --&gt; 序列化--&gt;byte[] </span></span><br><span class="line">        Jedis jedis = jedisPool.getResource();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">String</span> <span class="built_in">key</span>=<span class="string">"seckill:"</span>+seckill.getseckillId();</span><br><span class="line">                <span class="comment">//将其转为字节数组,里面内置了一个缓存器,如果当前对象特别大,会有一个缓冲的过程.</span></span><br><span class="line">                <span class="built_in">byte</span>[] bytes = ProtostuffIOUtil.toByteArray(seckill, schema, LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE));</span><br><span class="line">                <span class="comment">//经测试,这个字节数组的大小为51</span></span><br><span class="line">                <span class="comment">//超时缓存</span></span><br><span class="line">                <span class="built_in">int</span> timeout =<span class="number">60</span> * <span class="number">60</span>;</span><br><span class="line">                <span class="keyword">String</span> result = jedis.setex(<span class="built_in">key</span>.getBytes(), timeout, bytes);</span><br><span class="line">                <span class="keyword">return</span> result;</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                jedis.close();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            logger.error(e.getMessage(), e);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="测试类"><a href="#测试类" class="headerlink" title="测试类"></a>测试类</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">@RunWith(SpringJUnit4ClassRunner.class)</span><br><span class="line">@ContextConfiguration(&#123;&quot;classpath:spring/spring-dao.xml&quot;&#125;)</span><br><span class="line">public class BaseTest &#123;</span><br><span class="line">    private long id = 1001;</span><br><span class="line">    @Autowired</span><br><span class="line">    private RedisDao redisDao;</span><br><span class="line">    </span><br><span class="line">    @Autowired</span><br><span class="line">    private SecKillDao secKillDao;</span><br><span class="line"></span><br><span class="line">    @Test</span><br><span class="line">    public void testRedisDao() &#123;</span><br><span class="line">        Seckill seckill = redisDao.getSeckill(id);</span><br><span class="line">        if (seckill == null) &#123;</span><br><span class="line">            seckill = secKillDao.queryById(id);</span><br><span class="line">            if (seckill != null) &#123;</span><br><span class="line">                String result = redisDao.putSeckill(seckill);</span><br><span class="line">                System.out.println(&quot;存入是否成功:&quot; + result);</span><br><span class="line">                seckill = redisDao.getSeckill(id);</span><br><span class="line">                System.out.println(&quot;取出的SeckillShop是:&quot; + seckill);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="并发优化"><a href="#并发优化" class="headerlink" title="并发优化"></a>并发优化</h2><p>事务的发生:<br><img src="http://upload-images.jianshu.io/upload_images/7505161-bddd21602d02c09e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p><strong>目的就是要缩短update 减库存的时候使用行级锁,到commit事务的时候释放行级锁的时间.</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">我们把insert语句放在update语句的前面,因为他会做一个判断.</span><br><span class="line"></span><br><span class="line">insert ignore 插入成功,返回1,代表插入一行.插入失败,返回0.</span><br><span class="line"></span><br><span class="line">根据返回值来确定是否执行Update,update就是减少库存,返回1执行成功,返回0执行失败.</span><br><span class="line"></span><br><span class="line">主要目的就是降低mysql-rowLock的持有时间.</span><br></pre></td></tr></table></figure></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-a28f0f1e8d2c1894.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>找到SeckillService</p>
+<p>改造SeckillServiceImpl中的代码:</p>
+<p><code>将先执行update操作&amp;&amp;insert明细  改造成  insert操作在前然后update在后的样子</code></p>
+<p>这样做的好处是缩短了获得行级锁的时间.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">update insert update insert </span><br><span class="line"></span><br><span class="line">2个事务</span><br><span class="line">前面先占用行级锁,然后再插入明细      后面等待行级锁,再执行插入操作,这样等待行级锁的时间会更长.</span><br><span class="line"></span><br><span class="line">insert update insert update </span><br><span class="line"></span><br><span class="line">前面插入完毕后,执行update才占用行级锁         后面先插入,然后等待行级锁.</span><br><span class="line"></span><br><span class="line">也就是两个事务同时insert的情况下,没有锁竞争,执行速度会快.</span><br></pre></td></tr></table></figure></p>
+<p>改造代码如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">//写明细</span><br><span class="line">           int insertState = successKilledDao.insertSuccessKilled(seckillId, userPhone);</span><br><span class="line">           //唯一的验证标准就是验证 秒杀商品的ID和用户手机号.</span><br><span class="line">           //之前秒杀成功,state=1.再次秒杀同一seckillId的商品,他就会秒杀不成功了,因为我们设置的是insert ignore,插入就会忽略,insertState返回的就是0.</span><br><span class="line">           if (insertState &lt;= 0) &#123;</span><br><span class="line">               //重复秒杀</span><br><span class="line">               throw new RepatKillException(&quot;Seckill repeted!&quot;);</span><br><span class="line">           &#125; else &#123;</span><br><span class="line">               //减库存,热点商品竞争发生在这个地方</span><br><span class="line">               int updateCount = secKillDao.reduceNumber(seckillId, killTime);</span><br><span class="line">               //更新数&lt;0,说明减库存失败,没有更新到记录</span><br><span class="line">               if (updateCount &lt;= 0) &#123;</span><br><span class="line">                   //没有更新到记录,秒杀结束,rollback</span><br><span class="line">                   throw new SeckillClosedException(&quot;Seckill is closed!&quot;);</span><br><span class="line">               &#125; else &#123;</span><br><span class="line">                   //秒杀成功,commit</span><br><span class="line">                   SuccessKilled successKilled = successKilledDao.querySuccessKilledWithSeckill(seckillId, userPhone);</span><br><span class="line">                   return new SeckillExecution(seckillId, SeckillStatEnum.SUCCESS, successKilled);</span><br><span class="line">               &#125;</span><br><span class="line">           &#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="事务SQL在Mysql客户端执行"><a href="#事务SQL在Mysql客户端执行" class="headerlink" title="事务SQL在Mysql客户端执行."></a>事务SQL在Mysql客户端执行.</h2><p>存储过程做优化.</p>
+<p>目的:降低行级锁到commit的持续时间,同时让mysql获得更高的QPS.</p>
+<p>编写mysql的存储过程</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">DELIMITER $$ --console   默认的分隔符是; 现在将 ; 转换为 $$,这样看着舒服    </span><br><span class="line">--定义存储过程    </span><br><span class="line">--参数:in 输入参数; out 输入参数    </span><br><span class="line">--row_count():返回上一条修改类型sql的影响行数    </span><br><span class="line">--row_count :0;未修改数据; &gt;0;表示修改的行数;&lt;0:sql错误或者未执行sql    </span><br><span class="line">CREATE PROCEDURE `seckill`.`execute_seckill`    </span><br><span class="line">(in v_seckill_id bigint,in v_phone bigint,    </span><br><span class="line">in v_kill_time timestamp,out r_result int)    </span><br><span class="line">BEGIN    </span><br><span class="line">    DECLARE insert_count int default 0;    </span><br><span class="line">    START TRANSACTION;    </span><br><span class="line">    insert ignore into success_killed    </span><br><span class="line">    (seckill_id,user_phone,create_time)    </span><br><span class="line">    values (v_seckill_id,v_phone,v_kill_time);    </span><br><span class="line">    select row_count() into insert_count;    </span><br><span class="line">    IF (insert_count = 0) THEN    </span><br><span class="line">    ROLLBACK;    </span><br><span class="line">    set r_result = -1;    </span><br><span class="line">    ELSEIF (insert_count &lt; 0) THEN    </span><br><span class="line">    ROLLBACK;    </span><br><span class="line">    set r_result = -2;    </span><br><span class="line">    ELSE    </span><br><span class="line">    update seckill    </span><br><span class="line">    set number = number -1    </span><br><span class="line">    where seckill_id = v_seckill_id    </span><br><span class="line">    and start_time &lt; v_kill_time    </span><br><span class="line">    and end_time &gt; v_kill_time    </span><br><span class="line">    and number &gt; 0;    </span><br><span class="line">    select row_count() into insert_count;    </span><br><span class="line">    IF (insert_count = 0) THEN    </span><br><span class="line">    ROLLBACK;    </span><br><span class="line">    set r_result = 0;    </span><br><span class="line">    ELSEIF (insert_count &lt; 0) THEN    </span><br><span class="line">    ROLLBACK;    </span><br><span class="line">    set r_result = -2;    </span><br><span class="line">    ELSE    </span><br><span class="line">    COMMIT;    </span><br><span class="line">    set r_result = 1;    </span><br><span class="line">    END IF;    </span><br><span class="line">    END IF;    </span><br><span class="line">END;  </span><br><span class="line">$$</span><br></pre></td></tr></table></figure>
+<p>执行存储的过程</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">先把分隔符改回来</span><br><span class="line">DELIMITER ;</span><br><span class="line">1.定义一个常量</span><br><span class="line">-- 执行存储过程</span><br><span class="line">call execute_seckill(1003,13784832739,now(),@r_result);</span><br><span class="line">--  获取结果</span><br><span class="line">select @r_result;</span><br></pre></td></tr></table></figure>
+<p>可以看到结果是result=1,执行秒杀成功.</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-018aae8a40889a22.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>我们可以查看库存和明细表.</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-f9df0bf1808d4ec2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-f4741e9bae1c6727.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<h2 id="具体实现mysql的存储过程秒杀商品"><a href="#具体实现mysql的存储过程秒杀商品" class="headerlink" title="具体实现mysql的存储过程秒杀商品"></a>具体实现mysql的存储过程秒杀商品</h2><h3 id="编写service层接口"><a href="#编写service层接口" class="headerlink" title="编写service层接口"></a>编写service层接口</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line">    * 主要是完成mysql的存储过程</span><br><span class="line">    * @param seckillId</span><br><span class="line">    * @param userPhone</span><br><span class="line">    * @param md5</span><br><span class="line">    * @return</span><br><span class="line">    */</span><br><span class="line">   SeckillExecution executeSeckillProcedure(long seckillId, long userPhone, String md5);</span><br></pre></td></tr></table></figure>
+<h3 id="编写Dao层接口"><a href="#编写Dao层接口" class="headerlink" title="编写Dao层接口"></a>编写Dao层接口</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line">    * 使用存储过程执行秒杀</span><br><span class="line">    * @param paramMap</span><br><span class="line">    */</span><br><span class="line">   void killByProcedure(Map&lt;String,Object&gt; paramMap);</span><br></pre></td></tr></table></figure>
+<h3 id="mapper中的写法"><a href="#mapper中的写法" class="headerlink" title="mapper中的写法"></a>mapper中的写法</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&lt;!--mybati调用存储过程--&gt;</span><br><span class="line">   &lt;select id=&quot;killByProcedure&quot; statementType=&quot;CALLABLE&quot;&gt;</span><br><span class="line">       call execute_seckill(</span><br><span class="line">         #&#123;seckillId,jdbcType=BIGINT,mode=IN&#125;,</span><br><span class="line">         #&#123;phone,jdbcType=BIGINT,mode=IN&#125;,</span><br><span class="line">         #&#123;killTime,jdbcType=TIMESTAMP,mode=IN&#125;,</span><br><span class="line">         #&#123;result,jdbcType=INTEGER,mode=OUT&#125;</span><br><span class="line">       )</span><br><span class="line">   &lt;/select&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="引入依赖Commons-collections"><a href="#引入依赖Commons-collections" class="headerlink" title="引入依赖Commons-collections"></a>引入依赖Commons-collections</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;!-- https://mvnrepository.com/artifact/commons-collections/commons-collections --&gt;</span><br><span class="line">   &lt;dependency&gt;</span><br><span class="line">     &lt;groupId&gt;commons-collections&lt;/groupId&gt;</span><br><span class="line">     &lt;artifactId&gt;commons-collections&lt;/artifactId&gt;</span><br><span class="line">     &lt;version&gt;3.2.2&lt;/version&gt;</span><br><span class="line">   &lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="编写Service层接口"><a href="#编写Service层接口" class="headerlink" title="编写Service层接口"></a>编写Service层接口</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">public SeckillExecution executeSeckillProcedure(long seckillId, long userPhone, String md5) &#123;</span><br><span class="line">        //校验MD5</span><br><span class="line">        if(md5 == null || !md5.equals(getMd5(seckillId)) )&#123;</span><br><span class="line">            return new SeckillExecution(seckillId,SeckillStatEnum.DATA_REWRITE);</span><br><span class="line">        &#125;</span><br><span class="line">        Date killTime  = new Date();</span><br><span class="line">        HashMap&lt;String, Object&gt; map = new HashMap&lt;&gt;();</span><br><span class="line">        map.put(&quot;seckillId&quot;,seckillId);</span><br><span class="line">        map.put(&quot;phone&quot;,userPhone);</span><br><span class="line">        map.put(&quot;killTime&quot;,killTime);</span><br><span class="line">        map.put(&quot;result&quot;,null);</span><br><span class="line">        //执行存储过程,result被赋值</span><br><span class="line">        try &#123;</span><br><span class="line">            secKillDao.killByProcedure(map);</span><br><span class="line">            //获取Result</span><br><span class="line">            Integer result = MapUtils.getInteger(map, &quot;result&quot;, -2);</span><br><span class="line"></span><br><span class="line">            if(result == 1 )&#123;</span><br><span class="line">                SuccessKilled successKilled = successKilledDao.querySuccessKilledWithSeckill(seckillId, userPhone);</span><br><span class="line">                return new SeckillExecution(seckillId,SeckillStatEnum.SUCCESS,successKilled);</span><br><span class="line">            &#125;else&#123;</span><br><span class="line">                //根据Result去拿我们的秒杀状态.</span><br><span class="line">                return new SeckillExecution(seckillId,SeckillStatEnum.stateOf(result));</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            logger.error(e.getMessage(),e);</span><br><span class="line">            return new SeckillExecution(seckillId,SeckillStatEnum.INNER_ERROR);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="测试类-1"><a href="#测试类-1" class="headerlink" title="测试类"></a>测试类</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * 测试mysql存储过程</span><br><span class="line"> */</span><br><span class="line">@Test</span><br><span class="line">public void executeSeckillByProcedure()&#123;</span><br><span class="line">    long id =1003;</span><br><span class="line">    long phone= 1358963569;</span><br><span class="line">    Exposer exposer = seckillService.exportSeckillUrl(id);</span><br><span class="line">    if(exposer.isExposed())&#123;</span><br><span class="line">        //开始执行秒杀</span><br><span class="line">        String md5 = exposer.getMd5();</span><br><span class="line">            if(md5!= null)&#123;</span><br><span class="line">                SeckillExecution seckillExecution = seckillService.executeSeckillProcedure(id, phone, md5);</span><br><span class="line">                logger.info(seckillExecution.getStateInfo());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="替换Controller"><a href="#替换Controller" class="headerlink" title="替换Controller"></a>替换Controller</h3><p>就把SeckillController中的秒杀方法改为executeSeckillByProcedure即可.</p>
+<h2 id="展示"><a href="#展示" class="headerlink" title="展示"></a>展示</h2><p>详情表列表</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-b2f27e6e385231a4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>重复秒杀</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-cd6d98f19a6d1e83.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>秒杀成功</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-c2d3b10cc408d3a0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>秒杀成功的json数据–execution展示.这是用存储过程来执行秒杀的.</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-564db0197d8fe6f0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+
+    </article>
+    <!-- 前后页  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2018/01/08/区块链/" title= 区块链(Blockchain) >
+                    <div class="nextTitle">区块链(Blockchain)</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2018/01/02/秒杀Web层开发/" title= 秒杀web层开发 >
+                    <div class="prevTitle">秒杀web层开发</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid= MTAyMC8zNDE4Ni8xMDcyMw==>
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!--PC版-->
+
+    <!--PC版-->
+
+
+    
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:15733207536@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/lovemoganna" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title=wechat>
+                  
+                  <img class="profile-qr" src="/assets/wechat.jpg" />
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/luoyupiaoshang" class="iconfont-archer twitter" target="_blank" title=twitter></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://luoyupiaoshang.club/" target="_blank">luoyupiaoshang</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+        <span id="busuanzi_container_site_pv">访问总计 <span id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+    
+</footer>
+
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#高并发发生的位置"><span class="toc-number">1.</span> <span class="toc-text">高并发发生的位置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#详情页的分析"><span class="toc-number">1.1.</span> <span class="toc-text">详情页的分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CDN的理解"><span class="toc-number">1.2.</span> <span class="toc-text">CDN的理解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#系统时间优不优化"><span class="toc-number">1.3.</span> <span class="toc-text">系统时间优不优化?</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#秒杀地址接口分析"><span class="toc-number">1.4.</span> <span class="toc-text">秒杀地址接口分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#秒杀地址接口优化"><span class="toc-number">1.5.</span> <span class="toc-text">秒杀地址接口优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#其他方案分析"><span class="toc-number">1.6.</span> <span class="toc-text">其他方案分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#成本分析"><span class="toc-number">1.7.</span> <span class="toc-text">成本分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mysqlUpdate测试"><span class="toc-number">1.8.</span> <span class="toc-text">mysqlUpdate测试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#java控制事务行为的分析"><span class="toc-number">1.9.</span> <span class="toc-text">java控制事务行为的分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#高并发的难点所在"><span class="toc-number">1.10.</span> <span class="toc-text">高并发的难点所在</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#判断Update更新库存成功"><span class="toc-number">1.11.</span> <span class="toc-text">判断Update更新库存成功</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis后端缓存优化"><span class="toc-number">2.</span> <span class="toc-text">Redis后端缓存优化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#优化编码"><span class="toc-number">3.</span> <span class="toc-text">优化编码</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#protostuff序列化的依赖"><span class="toc-number">3.1.</span> <span class="toc-text">protostuff序列化的依赖</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#添加Redis服务"><span class="toc-number">3.2.</span> <span class="toc-text">添加Redis服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#测试类"><span class="toc-number">3.3.</span> <span class="toc-text">测试类</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#并发优化"><span class="toc-number">4.</span> <span class="toc-text">并发优化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#事务SQL在Mysql客户端执行"><span class="toc-number">5.</span> <span class="toc-text">事务SQL在Mysql客户端执行.</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#具体实现mysql的存储过程秒杀商品"><span class="toc-number">6.</span> <span class="toc-text">具体实现mysql的存储过程秒杀商品</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#编写service层接口"><span class="toc-number">6.1.</span> <span class="toc-text">编写service层接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#编写Dao层接口"><span class="toc-number">6.2.</span> <span class="toc-text">编写Dao层接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mapper中的写法"><span class="toc-number">6.3.</span> <span class="toc-text">mapper中的写法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#引入依赖Commons-collections"><span class="toc-number">6.4.</span> <span class="toc-text">引入依赖Commons-collections</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#编写Service层接口"><span class="toc-number">6.5.</span> <span class="toc-text">编写Service层接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#测试类-1"><span class="toc-number">6.6.</span> <span class="toc-text">测试类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#替换Controller"><span class="toc-number">6.7.</span> <span class="toc-text">替换Controller</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#展示"><span class="toc-number">7.</span> <span class="toc-text">展示</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">归档</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">标签</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">分类</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-archive"> Total : 25 </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/03</span><a class="archive-post-title" href= "/2018/04/03/interview/" >李刚_产品经理实习生</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/28</span><a class="archive-post-title" href= "/2018/02/28/mysql设计以及架构优化/" >mysql设计以及架构优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/25</span><a class="archive-post-title" href= "/2018/02/25/Redis集群的搭建/" >Redis-cluster搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/redis/" >Redis基本操作</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/spring和redis整合/" >Spring与Redis整合</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/Redis集群接口/" >Redis接口的编写</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/22</span><a class="archive-post-title" href= "/2018/02/22/DB02-数据库字段设计规范/" >DB02-数据库字段设计规范</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span><a class="archive-post-title" href= "/2018/02/01/mysql日志划分/" >mysql服务器日志</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/27</span><a class="archive-post-title" href= "/2018/01/27/选择常规查询和慢速查询日志的输出目的地/" >选择常规查询和慢速查询日志的输出目的地</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span><a class="archive-post-title" href= "/2018/01/25/集群环境中解决Session共享问题/" >集群环境中解决Session共享问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/24</span><a class="archive-post-title" href= "/2018/01/24/ajax跨域问题/" >ajax跨域问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/09</span><a class="archive-post-title" href= "/2018/01/09/WebCrawler/" >WebCrawler-网络爬虫01</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/08</span><a class="archive-post-title" href= "/2018/01/08/区块链/" >区块链(Blockchain)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀Web层开发/" >秒杀web层开发</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀service层开发/" >秒杀Service层开发</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀高并发优化/" >秒杀高并发优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/Markdown/" >markdown语法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/秒杀概述/" >秒杀概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/数据库的基本操作/" >数据库的基本操作</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/秒杀Dao层开发/" >秒杀Dao层开发</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2017 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/apringData-01/" >springData-01</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/SpringData-02/" >springData-02</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/SpringData-03/" >springData-03</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href= "/2017/11/09/springboot/" >SpringBoot初识</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href= "/2017/11/09/Spring事务/" >Spring事务</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="mysql设计"><span class="iconfont-archer">&#xe606;</span>mysql设计</span>
+    
+        <span class="sidebar-tag-name" data-tags="springdata"><span class="iconfont-archer">&#xe606;</span>springdata</span>
+    
+        <span class="sidebar-tag-name" data-tags="Redis"><span class="iconfont-archer">&#xe606;</span>Redis</span>
+    
+        <span class="sidebar-tag-name" data-tags="Redis-cluster"><span class="iconfont-archer">&#xe606;</span>Redis-cluster</span>
+    
+        <span class="sidebar-tag-name" data-tags="markdown"><span class="iconfont-archer">&#xe606;</span>markdown</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="Transaction"><span class="iconfont-archer">&#xe606;</span>Transaction</span>
+    
+        <span class="sidebar-tag-name" data-tags="爬虫的原理"><span class="iconfont-archer">&#xe606;</span>爬虫的原理</span>
+    
+        <span class="sidebar-tag-name" data-tags="爬虫架构"><span class="iconfont-archer">&#xe606;</span>爬虫架构</span>
+    
+        <span class="sidebar-tag-name" data-tags="Session共享"><span class="iconfont-archer">&#xe606;</span>Session共享</span>
+    
+        <span class="sidebar-tag-name" data-tags="个人简历"><span class="iconfont-archer">&#xe606;</span>个人简历</span>
+    
+        <span class="sidebar-tag-name" data-tags="实习生"><span class="iconfont-archer">&#xe606;</span>实习生</span>
+    
+        <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
+    
+        <span class="sidebar-tag-name" data-tags="ServiceLog"><span class="iconfont-archer">&#xe606;</span>ServiceLog</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构优化"><span class="iconfont-archer">&#xe606;</span>架构优化</span>
+    
+        <span class="sidebar-tag-name" data-tags="FT中文网"><span class="iconfont-archer">&#xe606;</span>FT中文网</span>
+    
+        <span class="sidebar-tag-name" data-tags="区块链"><span class="iconfont-archer">&#xe606;</span>区块链</span>
+    
+        <span class="sidebar-tag-name" data-tags="SSM"><span class="iconfont-archer">&#xe606;</span>SSM</span>
+    
+        <span class="sidebar-tag-name" data-tags="Web"><span class="iconfont-archer">&#xe606;</span>Web</span>
+    
+        <span class="sidebar-tag-name" data-tags="Bootstrap"><span class="iconfont-archer">&#xe606;</span>Bootstrap</span>
+    
+        <span class="sidebar-tag-name" data-tags="Service"><span class="iconfont-archer">&#xe606;</span>Service</span>
+    
+        <span class="sidebar-tag-name" data-tags="增删改查"><span class="iconfont-archer">&#xe606;</span>增删改查</span>
+    
+        <span class="sidebar-tag-name" data-tags="RowsLock"><span class="iconfont-archer">&#xe606;</span>RowsLock</span>
+    
+        <span class="sidebar-tag-name" data-tags="高并发"><span class="iconfont-archer">&#xe606;</span>高并发</span>
+    
+        <span class="sidebar-tag-name" data-tags="SpringBoot"><span class="iconfont-archer">&#xe606;</span>SpringBoot</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="mysql"><span class="iconfont-archer">&#xe60a;</span>mysql</span>
+    
+        <span class="sidebar-category-name" data-categories="spring"><span class="iconfont-archer">&#xe60a;</span>spring</span>
+    
+        <span class="sidebar-category-name" data-categories="Redis"><span class="iconfont-archer">&#xe60a;</span>Redis</span>
+    
+        <span class="sidebar-category-name" data-categories="Seckill"><span class="iconfont-archer">&#xe60a;</span>Seckill</span>
+    
+        <span class="sidebar-category-name" data-categories="SpringBoot"><span class="iconfont-archer">&#xe60a;</span>SpringBoot</span>
+    
+        <span class="sidebar-category-name" data-categories="区块链-Blockchain"><span class="iconfont-archer">&#xe60a;</span>区块链-Blockchain</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div>
+
+    <script>
+    var siteMeta = {
+        root: '/',
+        author: 'LiGang'
+    }
+</script>
+    <!-- busuanzi  -->
+    
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+    
+    </body>
+</html>
+
+

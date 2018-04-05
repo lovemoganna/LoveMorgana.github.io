@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html>
+    <!-- title -->
+
+
+
+
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
+    <title>Redis基本操作 · LoveMorgana&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+        box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s 1;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= /css/style.css?v=20180317 as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" type="text/css" href= /css/mobile.css?v=20180317 media="(max-width: 980px)"/>
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        
+    <link rel="icon" href= /assets/favicon.ico>
+    <script>
+        (function (w) {
+            "use strict";
+            // rel=preload support test
+            if (!w.loadCSS) {
+                w.loadCSS = function () { };
+            }
+            // define on the loadCSS obj
+            var rp = loadCSS.relpreload = {};
+            // rel=preload feature support test
+            // runs once and returns a function for compat purposes
+            rp.support = (function () {
+                var ret;
+                try {
+                    ret = w.document.createElement("link").relList.supports("preload");
+                } catch (e) {
+                    ret = false;
+                }
+                return function () {
+                    return ret;
+                };
+            })();
+
+            // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+            // then change that media back to its intended value on load
+            rp.bindMediaToggle = function (link) {
+                // remember existing media attr for ultimate state, or default to 'all'
+                var finalMedia = link.media || "all";
+
+                function enableStylesheet() {
+                    link.media = finalMedia;
+                }
+
+                // bind load handlers to enable media
+                if (link.addEventListener) {
+                    link.addEventListener("load", enableStylesheet);
+                } else if (link.attachEvent) {
+                    link.attachEvent("onload", enableStylesheet);
+                }
+
+                // Set rel and non-applicable media type to start an async request
+                // note: timeout allows this to happen async to let rendering continue in IE
+                setTimeout(function () {
+                    link.rel = "stylesheet";
+                    link.media = "only x";
+                });
+                // also enable media after 3 seconds,
+                // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+                setTimeout(enableStylesheet, 3000);
+            };
+
+            // loop through link elements in DOM
+            rp.poly = function () {
+                // double check this to prevent external calls from running
+                if (rp.support()) {
+                    return;
+                }
+                var links = w.document.getElementsByTagName("link");
+                for (var i = 0; i < links.length; i++) {
+                    var link = links[i];
+                    // qualify links to those with rel=preload and as=style attrs
+                    if (link.rel === "preload" && link.getAttribute("as") === "style" && !link.getAttribute("data-loadcss")) {
+                        // prevent rerunning on link
+                        link.setAttribute("data-loadcss", true);
+                        // bind listeners to toggle media back
+                        rp.bindMediaToggle(link);
+                    }
+                }
+            };
+
+            // if unsupported, run the polyfill
+            if (!rp.support()) {
+                // run once at least
+                rp.poly();
+
+                // rerun poly on an interval until onload
+                var run = w.setInterval(rp.poly, 500);
+                if (w.addEventListener) {
+                    w.addEventListener("load", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                } else if (w.attachEvent) {
+                    w.attachEvent("onload", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                }
+            }
+            // commonjs
+            if (typeof exports !== "undefined") {
+                exports.loadCSS = loadCSS;
+            }
+            else {
+                w.loadCSS = loadCSS;
+            }
+        }(typeof global !== "undefined" ? global : this));
+    </script>
+    <script src="//cdn.staticfile.org/jquery/3.2.1/jquery.min.js" defer></script>
+    <script src="/scripts/main.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+    <script>
+        (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+        (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date(); a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+        ga('create', 'UA-113782861-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >LoveMorgana&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Redis基本操作</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>LoveMorgana's Blog</a>
+</header>
+
+    <div class="wrapper">
+        <div class="site-intro" style=
+
+
+
+
+
+
+
+
+height:50vh;
+
+>
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Redis基本操作
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <!-- 文章页标签  -->
+            
+                <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Redis">Redis</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Redis-cluster">Redis-cluster</a>
+    
+</div>
+            
+            <div class="post-intro-meta">
+                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                <span class="post-intro-time">2018/02/24</span>
+                
+                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                    <span class="iconfont-archer">&#xe602;</span>
+                    <span id="busuanzi_value_page_pv"></span>
+                </span>
+                
+                <span class="shareWrapper">
+                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                    <span class="shareText">Share</span>
+                    <ul class="shareList">
+                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                            <div class="share-qrcode"></div>
+                        </li>
+                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                    </ul>
+                </span>
+            </div>
+        
+    </div>
+</div>
+        <script>
+  // load webfont-loader async, and add callback function
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+  
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntroTags = document.getElementsByClassName('post-intro-tags')[0],
+        postIntroMeat = document.getElementsByClassName('post-intro-meta')[0];
+      if (postIntroTags) {
+        postIntroTags.classList.add('post-fade-in');
+      }
+      if (postIntroMeat) {
+        postIntroMeat.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  async("https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", asyncCb)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="基本知识"><a href="#基本知识" class="headerlink" title="基本知识"></a>基本知识</h2><p>判断redis服务的健康状态.</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-2e65d5efd03b0e4d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""><br><figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">存储key-value,把key计算为一个hash值,把它放在一个位置.</span><br><span class="line"></span><br><span class="line">取得时候,先计算是哪个位置,直接去那个位置去取,</span><br><span class="line"></span><br><span class="line">是直接存取这个值,而不是遍历.</span><br><span class="line"></span><br><span class="line">Redis之所以快,是因为所有数据都是保存在内存当中的.</span><br></pre></td></tr></table></figure></p>
+<p>5种数据类型<br>key-value类型.</p>
+<p>string<br>hash<br>list<br>set<br>sorted set</p>
+<h3 id="1-string类型"><a href="#1-string类型" class="headerlink" title="1.string类型"></a>1.string类型</h3><p>1.写入键值对<br><code>set str1 abc</code><br>2.取得键值对<br><code>get str1</code><br>3.显示所有的key<br><code>keys *</code><br>4.增加一个键<br><code>incr key1</code><br>5.删除操作<br><code>del key4</code><br>6.加1的操作</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-b6ecd303f63c61fb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""><br>7.减1的操作</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-0d6c6ab0999aae50.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p><code>Redis中所有的字段都是字符串,他们是先转换成整型,在加减1的.</code></p>
+<p><code>我们观察下面的操作,就可以了.key2的键值是字符串,你给它加1,自然会出错,</code><br><img src="http://upload-images.jianshu.io/upload_images/7505161-5de49e5b35d18107.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""><br><code>要是像下面这样做就对了</code><br><img src="http://upload-images.jianshu.io/upload_images/7505161-fbaa5d14a4d9bc7e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<h3 id="2-hash类型"><a href="#2-hash类型" class="headerlink" title="2.hash类型"></a>2.hash类型</h3><p>1.创建一个hash<br><code>hset hash1 field1 1</code><br>2.查询一个hash的值<br><code>hget hash1 field1</code><br>3.删除一个hash<br><code>hdel hash1 field1</code><br>4.查询所有hash的field值<br><code>hkeys hash1</code></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-ac7d1421e7eaf530.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>5.查询所有的hash的value值<br><code>hvals hash1</code></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-2c692c0e17613d34.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""><br>6.查询hash所有的key-value值<br><code>hgetall hash1</code></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-e44ea5663b444d91.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<h3 id="redis的数据类型"><a href="#redis的数据类型" class="headerlink" title="redis的数据类型"></a>redis的数据类型</h3><p>list的元素可以重复,有序.<br>1.从左往右存储数据<br><code>rpush a b c d e f</code><br>2.从右往左储存数据<br><code>lpush 1 2 3 4 5 6</code></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-e27713e2bb8e7749.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>3.查看数据范围<br><code>lrange list1 0 -1</code><br><img src="http://upload-images.jianshu.io/upload_images/7505161-544ce80889e2d2ee.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>4.取出元素<br><code>lpop list1</code><br><code>rpop list1</code><br><code>取出元素之后,就不能看到之前的全部了.</code></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-46681b59cb0d0f20.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<h3 id="set类型"><a href="#set类型" class="headerlink" title="set类型"></a>set类型</h3><p>set 无序,且输入的数据不能重复<br>1.添加元素<br><code>sadd set1 a b c d a b</code><br>2.删除元素<br><code>srem set1 a</code><br>3.查看元素<br><code>smembers set1</code></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-f08045c0049e09a8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>4.seta与setb的比较</p>
+<p><code>类似于左连接和右连接那种形式,剔除共有的部分</code></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-272878a72f49c3d2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>5.取交集<br><code>sinter seta setb</code><br>6.取并集<br><code>sunion seta setb</code></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-00495d5eb1a723a0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<h3 id="sorted-set"><a href="#sorted-set" class="headerlink" title="sorted set"></a>sorted set</h3><p>元素是有序的,耗费的性能会很高. </p>
+<p>1.升序排列<br><code>zrange zset1 0 -1 withscores</code><br><img src="http://upload-images.jianshu.io/upload_images/7505161-b083f143961a1e89.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-71de8f1e4cd5f97f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>2.降序排列<br><code>zrevrange zset1 0 -1</code></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-ad833f1ec1f6bf20.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>3.带分数倒序排序</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-217194b867712373.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h3 id="设置key的过期时间"><a href="#设置key的过期时间" class="headerlink" title="设置key的过期时间"></a>设置key的过期时间</h3><p><code>expire key1 20</code></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-7bba03ea71cf76f4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>1.看看过期时间和倒计时</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-ce26d0a4e5fd10b3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""><br>2.永久保存和不存在的标识</p>
+<p><code>-1是永久保存的数据(持久化),-2是不存在的数据</code><br><img src="http://upload-images.jianshu.io/upload_images/7505161-d255b5319743bf4b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<h3 id="redis的持久化"><a href="#redis的持久化" class="headerlink" title="redis的持久化"></a>redis的持久化</h3><p>1.重新设置过期时间</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-2d673484a9d4d0e8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>2.持久化数据<br><code>persist key3</code>,-1就代表数据持久化了.<br><img src="http://upload-images.jianshu.io/upload_images/7505161-3a7a49d54a2d4d5c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>3.redis的持久化.<br>redis总的所有数据都是保存在内存当中的.</p>
+<p>持久化方案有2种:</p>
+<pre><code>1.Rdb:快照形式.定期把内存中当前时刻的数据保存到磁盘.这是Redis默认支持的持久化方案.
+2.aof形式:把所有对redis数据库操作的命令,增删改操作的命令,保存到文件当中,数据库恢复时把所有的命令执行一遍就可以了.
+</code></pre><p>redis.conf的配置里面有描述.</p>
+<p>1.第一种:<br><img src="http://upload-images.jianshu.io/upload_images/7505161-7d3bcac61425b092.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>15分钟之内有1个key发生变化,他就保存一个快照文件.<br>5分钟之内有10个key发生变化,他就保存一个快照文件.<br>1分钟之呢有1W个key发生变化,他就保存一个快照文件.</p>
+<p><code>快照模式有丢失文件的可能性,但是我们一般就做缓存.没多大影响.</code></p>
+<p>2.第二种<code>把增删改操作用文件保存</code></p>
+<p>默认是不开启的.对磁盘的IO比较频繁.<br><img src="http://upload-images.jianshu.io/upload_images/7505161-4600ea0113d356eb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+
+    </article>
+    <!-- 前后页  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2018/02/24/spring和redis整合/" title= Spring与Redis整合 >
+                    <div class="nextTitle">Spring与Redis整合</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2018/02/22/DB02-数据库字段设计规范/" title= DB02-数据库字段设计规范 >
+                    <div class="prevTitle">DB02-数据库字段设计规范</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid= MTAyMC8zNDE4Ni8xMDcyMw==>
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!--PC版-->
+
+    <!--PC版-->
+
+
+    
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:15733207536@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/lovemoganna" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title=wechat>
+                  
+                  <img class="profile-qr" src="/assets/wechat.jpg" />
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/luoyupiaoshang" class="iconfont-archer twitter" target="_blank" title=twitter></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://luoyupiaoshang.club/" target="_blank">luoyupiaoshang</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+        <span id="busuanzi_container_site_pv">访问总计 <span id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+    
+</footer>
+
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#基本知识"><span class="toc-number">1.</span> <span class="toc-text">基本知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-string类型"><span class="toc-number">1.1.</span> <span class="toc-text">1.string类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-hash类型"><span class="toc-number">1.2.</span> <span class="toc-text">2.hash类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#redis的数据类型"><span class="toc-number">1.3.</span> <span class="toc-text">redis的数据类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#set类型"><span class="toc-number">1.4.</span> <span class="toc-text">set类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sorted-set"><span class="toc-number">1.5.</span> <span class="toc-text">sorted set</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#设置key的过期时间"><span class="toc-number">1.6.</span> <span class="toc-text">设置key的过期时间</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#redis的持久化"><span class="toc-number">1.7.</span> <span class="toc-text">redis的持久化</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">归档</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">标签</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">分类</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-archive"> Total : 25 </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/03</span><a class="archive-post-title" href= "/2018/04/03/interview/" >李刚_产品经理实习生</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/28</span><a class="archive-post-title" href= "/2018/02/28/mysql设计以及架构优化/" >mysql设计以及架构优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/25</span><a class="archive-post-title" href= "/2018/02/25/Redis集群的搭建/" >Redis-cluster搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/redis/" >Redis基本操作</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/spring和redis整合/" >Spring与Redis整合</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/Redis集群接口/" >Redis接口的编写</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/22</span><a class="archive-post-title" href= "/2018/02/22/DB02-数据库字段设计规范/" >DB02-数据库字段设计规范</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span><a class="archive-post-title" href= "/2018/02/01/mysql日志划分/" >mysql服务器日志</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/27</span><a class="archive-post-title" href= "/2018/01/27/选择常规查询和慢速查询日志的输出目的地/" >选择常规查询和慢速查询日志的输出目的地</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span><a class="archive-post-title" href= "/2018/01/25/集群环境中解决Session共享问题/" >集群环境中解决Session共享问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/24</span><a class="archive-post-title" href= "/2018/01/24/ajax跨域问题/" >ajax跨域问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/09</span><a class="archive-post-title" href= "/2018/01/09/WebCrawler/" >WebCrawler-网络爬虫01</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/08</span><a class="archive-post-title" href= "/2018/01/08/区块链/" >区块链(Blockchain)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀Web层开发/" >秒杀web层开发</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀service层开发/" >秒杀Service层开发</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀高并发优化/" >秒杀高并发优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/Markdown/" >markdown语法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/秒杀概述/" >秒杀概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/数据库的基本操作/" >数据库的基本操作</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/秒杀Dao层开发/" >秒杀Dao层开发</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2017 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/apringData-01/" >springData-01</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/SpringData-02/" >springData-02</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/SpringData-03/" >springData-03</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href= "/2017/11/09/springboot/" >SpringBoot初识</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href= "/2017/11/09/Spring事务/" >Spring事务</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="mysql设计"><span class="iconfont-archer">&#xe606;</span>mysql设计</span>
+    
+        <span class="sidebar-tag-name" data-tags="springdata"><span class="iconfont-archer">&#xe606;</span>springdata</span>
+    
+        <span class="sidebar-tag-name" data-tags="Redis"><span class="iconfont-archer">&#xe606;</span>Redis</span>
+    
+        <span class="sidebar-tag-name" data-tags="Redis-cluster"><span class="iconfont-archer">&#xe606;</span>Redis-cluster</span>
+    
+        <span class="sidebar-tag-name" data-tags="markdown"><span class="iconfont-archer">&#xe606;</span>markdown</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="Transaction"><span class="iconfont-archer">&#xe606;</span>Transaction</span>
+    
+        <span class="sidebar-tag-name" data-tags="爬虫的原理"><span class="iconfont-archer">&#xe606;</span>爬虫的原理</span>
+    
+        <span class="sidebar-tag-name" data-tags="爬虫架构"><span class="iconfont-archer">&#xe606;</span>爬虫架构</span>
+    
+        <span class="sidebar-tag-name" data-tags="Session共享"><span class="iconfont-archer">&#xe606;</span>Session共享</span>
+    
+        <span class="sidebar-tag-name" data-tags="个人简历"><span class="iconfont-archer">&#xe606;</span>个人简历</span>
+    
+        <span class="sidebar-tag-name" data-tags="实习生"><span class="iconfont-archer">&#xe606;</span>实习生</span>
+    
+        <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
+    
+        <span class="sidebar-tag-name" data-tags="ServiceLog"><span class="iconfont-archer">&#xe606;</span>ServiceLog</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构优化"><span class="iconfont-archer">&#xe606;</span>架构优化</span>
+    
+        <span class="sidebar-tag-name" data-tags="FT中文网"><span class="iconfont-archer">&#xe606;</span>FT中文网</span>
+    
+        <span class="sidebar-tag-name" data-tags="区块链"><span class="iconfont-archer">&#xe606;</span>区块链</span>
+    
+        <span class="sidebar-tag-name" data-tags="SSM"><span class="iconfont-archer">&#xe606;</span>SSM</span>
+    
+        <span class="sidebar-tag-name" data-tags="Web"><span class="iconfont-archer">&#xe606;</span>Web</span>
+    
+        <span class="sidebar-tag-name" data-tags="Bootstrap"><span class="iconfont-archer">&#xe606;</span>Bootstrap</span>
+    
+        <span class="sidebar-tag-name" data-tags="Service"><span class="iconfont-archer">&#xe606;</span>Service</span>
+    
+        <span class="sidebar-tag-name" data-tags="增删改查"><span class="iconfont-archer">&#xe606;</span>增删改查</span>
+    
+        <span class="sidebar-tag-name" data-tags="RowsLock"><span class="iconfont-archer">&#xe606;</span>RowsLock</span>
+    
+        <span class="sidebar-tag-name" data-tags="高并发"><span class="iconfont-archer">&#xe606;</span>高并发</span>
+    
+        <span class="sidebar-tag-name" data-tags="SpringBoot"><span class="iconfont-archer">&#xe606;</span>SpringBoot</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="mysql"><span class="iconfont-archer">&#xe60a;</span>mysql</span>
+    
+        <span class="sidebar-category-name" data-categories="spring"><span class="iconfont-archer">&#xe60a;</span>spring</span>
+    
+        <span class="sidebar-category-name" data-categories="Redis"><span class="iconfont-archer">&#xe60a;</span>Redis</span>
+    
+        <span class="sidebar-category-name" data-categories="Seckill"><span class="iconfont-archer">&#xe60a;</span>Seckill</span>
+    
+        <span class="sidebar-category-name" data-categories="SpringBoot"><span class="iconfont-archer">&#xe60a;</span>SpringBoot</span>
+    
+        <span class="sidebar-category-name" data-categories="区块链-Blockchain"><span class="iconfont-archer">&#xe60a;</span>区块链-Blockchain</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div>
+
+    <script>
+    var siteMeta = {
+        root: '/',
+        author: 'LiGang'
+    }
+</script>
+    <!-- busuanzi  -->
+    
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+    
+    </body>
+</html>
+
+

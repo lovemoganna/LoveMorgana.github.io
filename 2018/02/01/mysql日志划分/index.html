@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html>
+    <!-- title -->
+
+
+
+
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
+    <title>mysql服务器日志 · LoveMorgana&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+        box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s 1;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= /css/style.css?v=20180317 as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" type="text/css" href= /css/mobile.css?v=20180317 media="(max-width: 980px)"/>
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        
+    <link rel="icon" href= /assets/favicon.ico>
+    <script>
+        (function (w) {
+            "use strict";
+            // rel=preload support test
+            if (!w.loadCSS) {
+                w.loadCSS = function () { };
+            }
+            // define on the loadCSS obj
+            var rp = loadCSS.relpreload = {};
+            // rel=preload feature support test
+            // runs once and returns a function for compat purposes
+            rp.support = (function () {
+                var ret;
+                try {
+                    ret = w.document.createElement("link").relList.supports("preload");
+                } catch (e) {
+                    ret = false;
+                }
+                return function () {
+                    return ret;
+                };
+            })();
+
+            // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+            // then change that media back to its intended value on load
+            rp.bindMediaToggle = function (link) {
+                // remember existing media attr for ultimate state, or default to 'all'
+                var finalMedia = link.media || "all";
+
+                function enableStylesheet() {
+                    link.media = finalMedia;
+                }
+
+                // bind load handlers to enable media
+                if (link.addEventListener) {
+                    link.addEventListener("load", enableStylesheet);
+                } else if (link.attachEvent) {
+                    link.attachEvent("onload", enableStylesheet);
+                }
+
+                // Set rel and non-applicable media type to start an async request
+                // note: timeout allows this to happen async to let rendering continue in IE
+                setTimeout(function () {
+                    link.rel = "stylesheet";
+                    link.media = "only x";
+                });
+                // also enable media after 3 seconds,
+                // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+                setTimeout(enableStylesheet, 3000);
+            };
+
+            // loop through link elements in DOM
+            rp.poly = function () {
+                // double check this to prevent external calls from running
+                if (rp.support()) {
+                    return;
+                }
+                var links = w.document.getElementsByTagName("link");
+                for (var i = 0; i < links.length; i++) {
+                    var link = links[i];
+                    // qualify links to those with rel=preload and as=style attrs
+                    if (link.rel === "preload" && link.getAttribute("as") === "style" && !link.getAttribute("data-loadcss")) {
+                        // prevent rerunning on link
+                        link.setAttribute("data-loadcss", true);
+                        // bind listeners to toggle media back
+                        rp.bindMediaToggle(link);
+                    }
+                }
+            };
+
+            // if unsupported, run the polyfill
+            if (!rp.support()) {
+                // run once at least
+                rp.poly();
+
+                // rerun poly on an interval until onload
+                var run = w.setInterval(rp.poly, 500);
+                if (w.addEventListener) {
+                    w.addEventListener("load", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                } else if (w.attachEvent) {
+                    w.attachEvent("onload", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                }
+            }
+            // commonjs
+            if (typeof exports !== "undefined") {
+                exports.loadCSS = loadCSS;
+            }
+            else {
+                w.loadCSS = loadCSS;
+            }
+        }(typeof global !== "undefined" ? global : this));
+    </script>
+    <script src="//cdn.staticfile.org/jquery/3.2.1/jquery.min.js" defer></script>
+    <script src="/scripts/main.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+    <script>
+        (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+        (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date(); a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+        ga('create', 'UA-113782861-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >LoveMorgana&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">mysql服务器日志</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>LoveMorgana's Blog</a>
+</header>
+
+    <div class="wrapper">
+        <div class="site-intro" style=
+
+
+
+
+
+
+
+
+height:50vh;
+
+>
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            mysql服务器日志
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <!-- 文章页标签  -->
+            
+                <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Mysql">Mysql</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "ServiceLog">ServiceLog</a>
+    
+</div>
+            
+            <div class="post-intro-meta">
+                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                <span class="post-intro-time">2018/02/01</span>
+                
+                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                    <span class="iconfont-archer">&#xe602;</span>
+                    <span id="busuanzi_value_page_pv"></span>
+                </span>
+                
+                <span class="shareWrapper">
+                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                    <span class="shareText">Share</span>
+                    <ul class="shareList">
+                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                            <div class="share-qrcode"></div>
+                        </li>
+                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                    </ul>
+                </span>
+            </div>
+        
+    </div>
+</div>
+        <script>
+  // load webfont-loader async, and add callback function
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+  
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntroTags = document.getElementsByClassName('post-intro-tags')[0],
+        postIntroMeat = document.getElementsByClassName('post-intro-meta')[0];
+      if (postIntroTags) {
+        postIntroTags.classList.add('post-fade-in');
+      }
+      if (postIntroMeat) {
+        postIntroMeat.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  async("https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", asyncCb)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="Mysql的使用情景"><a href="#Mysql的使用情景" class="headerlink" title="Mysql的使用情景"></a>Mysql的使用情景</h2><h3 id="日志记录系统"><a href="#日志记录系统" class="headerlink" title="日志记录系统"></a>日志记录系统</h3><p>MySQL 数据库的插入和查询性能都非常的高效，如果设计地较好，在使用 MyISAM 存储引擎的时候，两者可以做到互不锁定，达到很高的并发性能。</p>
+<p>所以，对需要大量的插入和查询日志记录的系统来说，MySQL 是非常不错的选择。</p>
+<p>比如处理用户的登录日志，操作日志 等 ，都是非常适合的应用场景。</p>
+<h3 id="数据仓库系统"><a href="#数据仓库系统" class="headerlink" title="数据仓库系统"></a>数据仓库系统</h3><p>随着现在数据仓库数据量的飞速增长，我们需要的存储空间越来越大。数据量的不断增长，使数据的统计分析变得越来越低效，也越来越困难。</p>
+<p>解决方式如下:</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1. 采用昂贵的高性能主机以提高计算性能，用高端存储设备提高 I/O 性能，效果理想，但是成本非常高；</span><br><span class="line">2. 通过将数据复制到多台使用大容量硬盘的廉价 pc server上，以提高整体计算性能和 I/O 能力，效果尚可，存储空间有一定限制，成本低廉.</span><br><span class="line">3. 通过将数据水平拆分，使用多台廉价的 pc<span class="built_in"> server </span>和本地磁盘来存放数据，每台机器上面都只有所有数据的一部分，解决了数据量的问题，</span><br><span class="line">   所有 pc<span class="built_in"> server </span>一起并行计算，也解决了计算能力问题，通过中间代理程序调配各台机器的运算任务，</span><br><span class="line">   既可以解决计算性能问题又可以解决 I/O 性能问题，成本也很低廉.</span><br></pre></td></tr></table></figure>
+<p>这是基本解决方法.对于Mysql来讲,实现2,3步骤很容易,通过读写分离,主从复制就可以实现.</p>
+<p>通过 MySQL 的简单复制功能，可以很好的将数据从一台主机复制到另外一台 ，不仅仅在局域网内可以复制，在广域网同样可以。优点在于Mysql是免费的.</p>
+<h2 id="Mysql的架构组成"><a href="#Mysql的架构组成" class="headerlink" title="Mysql的架构组成"></a>Mysql的架构组成</h2><h3 id="Mysql的物理文件组成"><a href="#Mysql的物理文件组成" class="headerlink" title="Mysql的物理文件组成"></a>Mysql的物理文件组成</h3><h4 id="Mysql5-7服务器日志"><a href="#Mysql5-7服务器日志" class="headerlink" title="Mysql5.7服务器日志"></a>Mysql5.7服务器日志</h4><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">1. </span>选择常规查询和慢查询日志输出目的地</span><br><span class="line"><span class="bullet">2. </span>错误日志</span><br><span class="line"><span class="bullet">3. </span>一般查询日志</span><br><span class="line"><span class="bullet">4. </span>二进制日志(Binlog)</span><br><span class="line"><span class="bullet">5. </span>manchaxun rizhi</span><br><span class="line"><span class="bullet">6. </span>DDL 日志</span><br><span class="line"><span class="bullet">7. </span>服务器日志维护</span><br></pre></td></tr></table></figure>
+<h2 id="MySQL服务器有几个日志可以帮助你找出正在发生的活动"><a href="#MySQL服务器有几个日志可以帮助你找出正在发生的活动" class="headerlink" title="MySQL服务器有几个日志可以帮助你找出正在发生的活动."></a>MySQL服务器有几个日志可以帮助你找出正在发生的活动.</h2><p>日志类型:</p>
+<ul>
+<li>错误日志</li>
+<li>一般查询日志</li>
+<li>二进制日志</li>
+<li>中继日志</li>
+<li>慢查询日志</li>
+<li>DDL日志(元数据日志)<br>-<br>写入日志的信息:</li>
+<li>在启动,运行或者停止mysqld时遇到的问题</li>
+<li>建立了客户的客户关系和声明</li>
+<li>改变数据的语句(也可用于复制)</li>
+<li>从复制主服务器接收的数据更改</li>
+<li>查询花费了超过 long_query_time几秒的时间执行</li>
+<li>元数据操作由DDL语句执行</li>
+</ul>
+<hr>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">默认情况下，除Windows上的错误日志之外，不会启用任何日志。</span><br><span class="line"></span><br><span class="line">DDL日志始终在需要时创建，并且没有用户可配置选项;</span><br><span class="line"></span><br><span class="line">默认情况下，服务器为数据目录中的所有启用日志写入文件。</span><br><span class="line"></span><br><span class="line">您可以通过刷新日志来强制服务器关闭并重新打开日志文件（或在某些情况下切换到新的日志文件）。</span><br><span class="line"></span><br><span class="line">发出FLUSH LOGS语句时发生日志刷新 ; 用a 或者参数执行 mysqladmin ; 或使用 或 选项执行 mysqldump。</span><br><span class="line"></span><br><span class="line">例如<span class="symbol">:flush-logsrefresh--flush-logs--master-data</span></span><br><span class="line"></span><br><span class="line">另外，二进制日志在其大小达到max_binlog_size系统变量的值时被刷新 。</span><br><span class="line"></span><br><span class="line">可以在运行时控制常规查询和慢查询日志.可以启动或者禁用日志记,或者更改日志文件名称.</span><br><span class="line"></span><br><span class="line">也可以告诉服务器编写通用查询和慢查询条目来记录表或者日志文件.</span><br><span class="line"></span><br><span class="line">日志维护操作(比如<span class="symbol">:</span>旧日志文件到期)的信息</span><br><span class="line"></span><br><span class="line">有关保持日志安全的信息</span><br><span class="line"></span><br><span class="line">以上都可以查看下列链接.</span><br></pre></td></tr></table></figure>
+<p>TODO:</p>
+<p><a href="">DDL日志</a></p>
+<p><a href="">FLUSH语法</a></p>
+<p><a href="">mysqladmin - 管理MySQL服务器的客户端</a></p>
+<p><a href="">mysqldump–数据库备份程序</a></p>
+<p><a href="">从服务器中继日志</a></p>
+<p><a href="">服务器日志维护</a></p>
+<p><a href="">密码和日志记录</a></p>
+
+    </article>
+    <!-- 前后页  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2018/02/22/DB02-数据库字段设计规范/" title= DB02-数据库字段设计规范 >
+                    <div class="nextTitle">DB02-数据库字段设计规范</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2018/01/27/选择常规查询和慢速查询日志的输出目的地/" title= 选择常规查询和慢速查询日志的输出目的地 >
+                    <div class="prevTitle">选择常规查询和慢速查询日志的输出目的地</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid= MTAyMC8zNDE4Ni8xMDcyMw==>
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!--PC版-->
+
+    <!--PC版-->
+
+
+    
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:15733207536@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/lovemoganna" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title=wechat>
+                  
+                  <img class="profile-qr" src="/assets/wechat.jpg" />
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/luoyupiaoshang" class="iconfont-archer twitter" target="_blank" title=twitter></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://luoyupiaoshang.club/" target="_blank">luoyupiaoshang</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+        <span id="busuanzi_container_site_pv">访问总计 <span id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+    
+</footer>
+
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Mysql的使用情景"><span class="toc-number">1.</span> <span class="toc-text">Mysql的使用情景</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#日志记录系统"><span class="toc-number">1.1.</span> <span class="toc-text">日志记录系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#数据仓库系统"><span class="toc-number">1.2.</span> <span class="toc-text">数据仓库系统</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Mysql的架构组成"><span class="toc-number">2.</span> <span class="toc-text">Mysql的架构组成</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Mysql的物理文件组成"><span class="toc-number">2.1.</span> <span class="toc-text">Mysql的物理文件组成</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Mysql5-7服务器日志"><span class="toc-number">2.1.1.</span> <span class="toc-text">Mysql5.7服务器日志</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MySQL服务器有几个日志可以帮助你找出正在发生的活动"><span class="toc-number">3.</span> <span class="toc-text">MySQL服务器有几个日志可以帮助你找出正在发生的活动.</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">归档</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">标签</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">分类</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-archive"> Total : 25 </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/03</span><a class="archive-post-title" href= "/2018/04/03/interview/" >李刚_产品经理实习生</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/28</span><a class="archive-post-title" href= "/2018/02/28/mysql设计以及架构优化/" >mysql设计以及架构优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/25</span><a class="archive-post-title" href= "/2018/02/25/Redis集群的搭建/" >Redis-cluster搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/redis/" >Redis基本操作</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/spring和redis整合/" >Spring与Redis整合</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/Redis集群接口/" >Redis接口的编写</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/22</span><a class="archive-post-title" href= "/2018/02/22/DB02-数据库字段设计规范/" >DB02-数据库字段设计规范</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span><a class="archive-post-title" href= "/2018/02/01/mysql日志划分/" >mysql服务器日志</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/27</span><a class="archive-post-title" href= "/2018/01/27/选择常规查询和慢速查询日志的输出目的地/" >选择常规查询和慢速查询日志的输出目的地</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span><a class="archive-post-title" href= "/2018/01/25/集群环境中解决Session共享问题/" >集群环境中解决Session共享问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/24</span><a class="archive-post-title" href= "/2018/01/24/ajax跨域问题/" >ajax跨域问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/09</span><a class="archive-post-title" href= "/2018/01/09/WebCrawler/" >WebCrawler-网络爬虫01</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/08</span><a class="archive-post-title" href= "/2018/01/08/区块链/" >区块链(Blockchain)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀Web层开发/" >秒杀web层开发</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀service层开发/" >秒杀Service层开发</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀高并发优化/" >秒杀高并发优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/Markdown/" >markdown语法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/秒杀概述/" >秒杀概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/数据库的基本操作/" >数据库的基本操作</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/秒杀Dao层开发/" >秒杀Dao层开发</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2017 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/apringData-01/" >springData-01</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/SpringData-02/" >springData-02</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/SpringData-03/" >springData-03</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href= "/2017/11/09/springboot/" >SpringBoot初识</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href= "/2017/11/09/Spring事务/" >Spring事务</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="mysql设计"><span class="iconfont-archer">&#xe606;</span>mysql设计</span>
+    
+        <span class="sidebar-tag-name" data-tags="springdata"><span class="iconfont-archer">&#xe606;</span>springdata</span>
+    
+        <span class="sidebar-tag-name" data-tags="Redis"><span class="iconfont-archer">&#xe606;</span>Redis</span>
+    
+        <span class="sidebar-tag-name" data-tags="Redis-cluster"><span class="iconfont-archer">&#xe606;</span>Redis-cluster</span>
+    
+        <span class="sidebar-tag-name" data-tags="markdown"><span class="iconfont-archer">&#xe606;</span>markdown</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="Transaction"><span class="iconfont-archer">&#xe606;</span>Transaction</span>
+    
+        <span class="sidebar-tag-name" data-tags="爬虫的原理"><span class="iconfont-archer">&#xe606;</span>爬虫的原理</span>
+    
+        <span class="sidebar-tag-name" data-tags="爬虫架构"><span class="iconfont-archer">&#xe606;</span>爬虫架构</span>
+    
+        <span class="sidebar-tag-name" data-tags="Session共享"><span class="iconfont-archer">&#xe606;</span>Session共享</span>
+    
+        <span class="sidebar-tag-name" data-tags="个人简历"><span class="iconfont-archer">&#xe606;</span>个人简历</span>
+    
+        <span class="sidebar-tag-name" data-tags="实习生"><span class="iconfont-archer">&#xe606;</span>实习生</span>
+    
+        <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
+    
+        <span class="sidebar-tag-name" data-tags="ServiceLog"><span class="iconfont-archer">&#xe606;</span>ServiceLog</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构优化"><span class="iconfont-archer">&#xe606;</span>架构优化</span>
+    
+        <span class="sidebar-tag-name" data-tags="FT中文网"><span class="iconfont-archer">&#xe606;</span>FT中文网</span>
+    
+        <span class="sidebar-tag-name" data-tags="区块链"><span class="iconfont-archer">&#xe606;</span>区块链</span>
+    
+        <span class="sidebar-tag-name" data-tags="SSM"><span class="iconfont-archer">&#xe606;</span>SSM</span>
+    
+        <span class="sidebar-tag-name" data-tags="Web"><span class="iconfont-archer">&#xe606;</span>Web</span>
+    
+        <span class="sidebar-tag-name" data-tags="Bootstrap"><span class="iconfont-archer">&#xe606;</span>Bootstrap</span>
+    
+        <span class="sidebar-tag-name" data-tags="Service"><span class="iconfont-archer">&#xe606;</span>Service</span>
+    
+        <span class="sidebar-tag-name" data-tags="增删改查"><span class="iconfont-archer">&#xe606;</span>增删改查</span>
+    
+        <span class="sidebar-tag-name" data-tags="RowsLock"><span class="iconfont-archer">&#xe606;</span>RowsLock</span>
+    
+        <span class="sidebar-tag-name" data-tags="高并发"><span class="iconfont-archer">&#xe606;</span>高并发</span>
+    
+        <span class="sidebar-tag-name" data-tags="SpringBoot"><span class="iconfont-archer">&#xe606;</span>SpringBoot</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="mysql"><span class="iconfont-archer">&#xe60a;</span>mysql</span>
+    
+        <span class="sidebar-category-name" data-categories="spring"><span class="iconfont-archer">&#xe60a;</span>spring</span>
+    
+        <span class="sidebar-category-name" data-categories="Redis"><span class="iconfont-archer">&#xe60a;</span>Redis</span>
+    
+        <span class="sidebar-category-name" data-categories="Seckill"><span class="iconfont-archer">&#xe60a;</span>Seckill</span>
+    
+        <span class="sidebar-category-name" data-categories="SpringBoot"><span class="iconfont-archer">&#xe60a;</span>SpringBoot</span>
+    
+        <span class="sidebar-category-name" data-categories="区块链-Blockchain"><span class="iconfont-archer">&#xe60a;</span>区块链-Blockchain</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div>
+
+    <script>
+    var siteMeta = {
+        root: '/',
+        author: 'LiGang'
+    }
+</script>
+    <!-- busuanzi  -->
+    
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+    
+    </body>
+</html>
+
+

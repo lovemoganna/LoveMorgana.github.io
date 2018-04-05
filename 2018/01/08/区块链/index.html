@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html>
+    <!-- title -->
+
+
+
+
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
+    <title>区块链(Blockchain) · LoveMorgana&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+        box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s 1;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= /css/style.css?v=20180317 as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" type="text/css" href= /css/mobile.css?v=20180317 media="(max-width: 980px)"/>
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        
+    <link rel="icon" href= /assets/favicon.ico>
+    <script>
+        (function (w) {
+            "use strict";
+            // rel=preload support test
+            if (!w.loadCSS) {
+                w.loadCSS = function () { };
+            }
+            // define on the loadCSS obj
+            var rp = loadCSS.relpreload = {};
+            // rel=preload feature support test
+            // runs once and returns a function for compat purposes
+            rp.support = (function () {
+                var ret;
+                try {
+                    ret = w.document.createElement("link").relList.supports("preload");
+                } catch (e) {
+                    ret = false;
+                }
+                return function () {
+                    return ret;
+                };
+            })();
+
+            // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+            // then change that media back to its intended value on load
+            rp.bindMediaToggle = function (link) {
+                // remember existing media attr for ultimate state, or default to 'all'
+                var finalMedia = link.media || "all";
+
+                function enableStylesheet() {
+                    link.media = finalMedia;
+                }
+
+                // bind load handlers to enable media
+                if (link.addEventListener) {
+                    link.addEventListener("load", enableStylesheet);
+                } else if (link.attachEvent) {
+                    link.attachEvent("onload", enableStylesheet);
+                }
+
+                // Set rel and non-applicable media type to start an async request
+                // note: timeout allows this to happen async to let rendering continue in IE
+                setTimeout(function () {
+                    link.rel = "stylesheet";
+                    link.media = "only x";
+                });
+                // also enable media after 3 seconds,
+                // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+                setTimeout(enableStylesheet, 3000);
+            };
+
+            // loop through link elements in DOM
+            rp.poly = function () {
+                // double check this to prevent external calls from running
+                if (rp.support()) {
+                    return;
+                }
+                var links = w.document.getElementsByTagName("link");
+                for (var i = 0; i < links.length; i++) {
+                    var link = links[i];
+                    // qualify links to those with rel=preload and as=style attrs
+                    if (link.rel === "preload" && link.getAttribute("as") === "style" && !link.getAttribute("data-loadcss")) {
+                        // prevent rerunning on link
+                        link.setAttribute("data-loadcss", true);
+                        // bind listeners to toggle media back
+                        rp.bindMediaToggle(link);
+                    }
+                }
+            };
+
+            // if unsupported, run the polyfill
+            if (!rp.support()) {
+                // run once at least
+                rp.poly();
+
+                // rerun poly on an interval until onload
+                var run = w.setInterval(rp.poly, 500);
+                if (w.addEventListener) {
+                    w.addEventListener("load", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                } else if (w.attachEvent) {
+                    w.attachEvent("onload", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                }
+            }
+            // commonjs
+            if (typeof exports !== "undefined") {
+                exports.loadCSS = loadCSS;
+            }
+            else {
+                w.loadCSS = loadCSS;
+            }
+        }(typeof global !== "undefined" ? global : this));
+    </script>
+    <script src="//cdn.staticfile.org/jquery/3.2.1/jquery.min.js" defer></script>
+    <script src="/scripts/main.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+    <script>
+        (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+        (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date(); a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+        ga('create', 'UA-113782861-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >LoveMorgana&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">区块链(Blockchain)</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>LoveMorgana's Blog</a>
+</header>
+
+    <div class="wrapper">
+        <div class="site-intro" style=
+
+
+
+
+
+
+
+
+height:50vh;
+
+>
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            区块链(Blockchain)
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <!-- 文章页标签  -->
+            
+                <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "FT中文网">FT中文网</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "区块链">区块链</a>
+    
+</div>
+            
+            <div class="post-intro-meta">
+                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                <span class="post-intro-time">2018/01/08</span>
+                
+                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                    <span class="iconfont-archer">&#xe602;</span>
+                    <span id="busuanzi_value_page_pv"></span>
+                </span>
+                
+                <span class="shareWrapper">
+                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                    <span class="shareText">Share</span>
+                    <ul class="shareList">
+                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                            <div class="share-qrcode"></div>
+                        </li>
+                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                    </ul>
+                </span>
+            </div>
+        
+    </div>
+</div>
+        <script>
+  // load webfont-loader async, and add callback function
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+  
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntroTags = document.getElementsByClassName('post-intro-tags')[0],
+        postIntroMeat = document.getElementsByClassName('post-intro-meta')[0];
+      if (postIntroTags) {
+        postIntroTags.classList.add('post-fade-in');
+      }
+      if (postIntroMeat) {
+        postIntroMeat.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  async("https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", asyncCb)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="起源"><a href="#起源" class="headerlink" title="起源"></a>起源</h1><ul>
+<li>区块链技术起源于<code>比特币</code>,是比特币的底层技术.</li>
+</ul>
+<blockquote>
+<p>区块链本身是一串使用密码学方法相关联产生的数据块,<br>  每一个数据块中包含了一次比特币网络交易的信息,并由世界各地所有的比特币用户共同维护.</p>
+</blockquote>
+<h2 id="区块链的本质"><a href="#区块链的本质" class="headerlink" title="区块链的本质"></a>区块链的本质</h2><ul>
+<li>区块链的本质是<code>电子账簿</code>.<blockquote>
+<p>通俗讲,区块链就是利用计算机程序在全网记录所有交易信息的<strong>公开大账本</strong>.<br>人们只需要加入一个公开透明的数据库,通过点对点的记账,数据传输,认证或合约<br>来达成信用共识,而不再借助任何中间方.</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="区块链的特点"><a href="#区块链的特点" class="headerlink" title="区块链的特点"></a>区块链的特点</h2><ul>
+<li>区块链特点是受第三方控制的.</li>
+</ul>
+<blockquote>
+<p>区块链中每个节点和矿工必须遵循同一记账交易规则,而这个规则是基于<strong>密码算法</strong>而不是信用.<br>  同时每笔交易需要网络内其他用户的批准,所以不需要一套第三方中介结构或信任机构背锅.</p>
+</blockquote>
+<h2 id="区块链的安全性"><a href="#区块链的安全性" class="headerlink" title="区块链的安全性"></a>区块链的安全性</h2><p>区块链的技术采取保障其安全性的算法是<code>单向哈希算法</code>.</p>
+<blockquote>
+<p>区块链采取单向哈希算法,哈希(hash)算法是一种单向密码体制,即它是一个从明文到密文的不可逆的映射,只有加密过程,没有解密过程.<br>  每当有加密交易产生时,网络中有强大运算能力的矿工(Miner)就开始利用算法解密验证交易,创造出新的区块来记录最新的交易.<br>  像石榴算法,绿萝算法,企鹅算法都是常见的搜索引擎算法.</p>
+</blockquote>
+<h2 id="区块链的分类"><a href="#区块链的分类" class="headerlink" title="区块链的分类"></a>区块链的分类</h2><p>目前已知的区块链技术大致可分成三类:</p>
+<ul>
+<li><p>公开区块链(public blockchain): 像比特币,公开区块链上的数据所有人都可以访问,所有人都可以发出交易等待被写入区块链.</p>
+</li>
+<li><p>协作区块链(federated blockchain): 德勤等会计所尝试的<strong>审计系统</strong>,参与区款连的节点是事先选择好的,节点间很可能是有很好的网络连接.</p>
+</li>
+<li><p>私有区域链(private blockchain): 参与的节点只有用户自己,数据的访问和使用有严格的权限管理.</p>
+</li>
+</ul>
+<h2 id="区款连的运行"><a href="#区款连的运行" class="headerlink" title="区款连的运行"></a>区款连的运行</h2><blockquote>
+<p>区块链这个公开透明的数据库包括了过去所有的交易记录,历史数据以及其他相关信息,这些信息安全地<strong>分布式存储</strong>在一串使用密码学方法产生的数据块中,即为一个区块,每个区块都包含了一个区块的索引,即区块的哈希值(hash),而从创始区块连接当前区块,就形成了区块链.<br>    区块链自动地降低了支付成本.</p>
+</blockquote>
+<h2 id="15年12月重金投资区块链的初创公司"><a href="#15年12月重金投资区块链的初创公司" class="headerlink" title="15年12月重金投资区块链的初创公司"></a>15年12月重金投资区块链的初创公司</h2><blockquote>
+<p>华尔街的金融公司正在投资区块链,抢滩布局.Visa,纳斯达克,花旗风投投资了一家旧金山区块链初创公司chain,设计融资金额达到3000万美元.</p>
+</blockquote>
+<h2 id="类比特币数据货币RSCoin"><a href="#类比特币数据货币RSCoin" class="headerlink" title="类比特币数据货币RSCoin"></a>类比特币数据货币RSCoin</h2><blockquote>
+<p>英国央行计划发布由中央机构控制的类比特币数据货币RSCoin.<br>    这是一款完全基于央行的需求来设计的基于区块链技术的数字货币,该技术将依赖于一系列权威机构,如商业机构,防止货币重复消费.<br>    目前,RSCoin由伦敦大学学院(UCL)研发,已进入了初步测试阶段.</p>
+</blockquote>
+<h2 id="区块链的结算应用"><a href="#区块链的结算应用" class="headerlink" title="区块链的结算应用"></a>区块链的结算应用</h2><blockquote>
+<p>瑞穗银行声明中表示:”连续地生成包含交易信息的区块按照时间顺序链接成了区块链,编程不能被篡改的信息.而且,因为信息可以在多个公司之间共享,所以合作伙伴证实它可以缩短交易后的程序所需要的时间.”<br>    区块链技术在试验过程中,也确实缩短了交易后程序的时间,达到接近即时结算的效果.</p>
+</blockquote>
+<h2 id="中国资本在区块链的作为"><a href="#中国资本在区块链的作为" class="headerlink" title="中国资本在区块链的作为"></a>中国资本在区块链的作为</h2><blockquote>
+<p>作为比特币及区块链的忠实拥护者.万向集团出资5000万美元成立了区块链基金,用于在全球范围内投资区块链商业应用相关的各类项目.<br>    全球十大区块链投资中我国占据三席,分别为数贝投资,IDG,万向区块链基金.    </p>
+</blockquote>
+<h2 id="测试代码高亮"><a href="#测试代码高亮" class="headerlink" title="测试代码高亮"></a>测试代码高亮</h2><figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">test</span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">main</span>(<span class="params">String [] ages</span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        System.<span class="keyword">out</span>.println(<span class="string">"hello world!"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 你好啊!</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">    代码高亮测试</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+    </article>
+    <!-- 前后页  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2018/01/09/WebCrawler/" title= WebCrawler-网络爬虫01 >
+                    <div class="nextTitle">WebCrawler-网络爬虫01</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2018/01/02/秒杀高并发优化/" title= 秒杀高并发优化 >
+                    <div class="prevTitle">秒杀高并发优化</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid= MTAyMC8zNDE4Ni8xMDcyMw==>
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!--PC版-->
+
+    <!--PC版-->
+
+
+    
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:15733207536@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/lovemoganna" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title=wechat>
+                  
+                  <img class="profile-qr" src="/assets/wechat.jpg" />
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/luoyupiaoshang" class="iconfont-archer twitter" target="_blank" title=twitter></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://luoyupiaoshang.club/" target="_blank">luoyupiaoshang</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+        <span id="busuanzi_container_site_pv">访问总计 <span id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+    
+</footer>
+
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#起源"><span class="toc-number">1.</span> <span class="toc-text">起源</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#区块链的本质"><span class="toc-number">1.1.</span> <span class="toc-text">区块链的本质</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#区块链的特点"><span class="toc-number">1.2.</span> <span class="toc-text">区块链的特点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#区块链的安全性"><span class="toc-number">1.3.</span> <span class="toc-text">区块链的安全性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#区块链的分类"><span class="toc-number">1.4.</span> <span class="toc-text">区块链的分类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#区款连的运行"><span class="toc-number">1.5.</span> <span class="toc-text">区款连的运行</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#15年12月重金投资区块链的初创公司"><span class="toc-number">1.6.</span> <span class="toc-text">15年12月重金投资区块链的初创公司</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#类比特币数据货币RSCoin"><span class="toc-number">1.7.</span> <span class="toc-text">类比特币数据货币RSCoin</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#区块链的结算应用"><span class="toc-number">1.8.</span> <span class="toc-text">区块链的结算应用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#中国资本在区块链的作为"><span class="toc-number">1.9.</span> <span class="toc-text">中国资本在区块链的作为</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#测试代码高亮"><span class="toc-number">1.10.</span> <span class="toc-text">测试代码高亮</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">归档</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">标签</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">分类</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-archive"> Total : 25 </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/03</span><a class="archive-post-title" href= "/2018/04/03/interview/" >李刚_产品经理实习生</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/28</span><a class="archive-post-title" href= "/2018/02/28/mysql设计以及架构优化/" >mysql设计以及架构优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/25</span><a class="archive-post-title" href= "/2018/02/25/Redis集群的搭建/" >Redis-cluster搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/redis/" >Redis基本操作</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/spring和redis整合/" >Spring与Redis整合</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/Redis集群接口/" >Redis接口的编写</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/22</span><a class="archive-post-title" href= "/2018/02/22/DB02-数据库字段设计规范/" >DB02-数据库字段设计规范</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span><a class="archive-post-title" href= "/2018/02/01/mysql日志划分/" >mysql服务器日志</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/27</span><a class="archive-post-title" href= "/2018/01/27/选择常规查询和慢速查询日志的输出目的地/" >选择常规查询和慢速查询日志的输出目的地</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span><a class="archive-post-title" href= "/2018/01/25/集群环境中解决Session共享问题/" >集群环境中解决Session共享问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/24</span><a class="archive-post-title" href= "/2018/01/24/ajax跨域问题/" >ajax跨域问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/09</span><a class="archive-post-title" href= "/2018/01/09/WebCrawler/" >WebCrawler-网络爬虫01</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/08</span><a class="archive-post-title" href= "/2018/01/08/区块链/" >区块链(Blockchain)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀Web层开发/" >秒杀web层开发</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀service层开发/" >秒杀Service层开发</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀高并发优化/" >秒杀高并发优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/Markdown/" >markdown语法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/秒杀概述/" >秒杀概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/数据库的基本操作/" >数据库的基本操作</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/秒杀Dao层开发/" >秒杀Dao层开发</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2017 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/apringData-01/" >springData-01</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/SpringData-02/" >springData-02</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/SpringData-03/" >springData-03</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href= "/2017/11/09/springboot/" >SpringBoot初识</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href= "/2017/11/09/Spring事务/" >Spring事务</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="mysql设计"><span class="iconfont-archer">&#xe606;</span>mysql设计</span>
+    
+        <span class="sidebar-tag-name" data-tags="springdata"><span class="iconfont-archer">&#xe606;</span>springdata</span>
+    
+        <span class="sidebar-tag-name" data-tags="Redis"><span class="iconfont-archer">&#xe606;</span>Redis</span>
+    
+        <span class="sidebar-tag-name" data-tags="Redis-cluster"><span class="iconfont-archer">&#xe606;</span>Redis-cluster</span>
+    
+        <span class="sidebar-tag-name" data-tags="markdown"><span class="iconfont-archer">&#xe606;</span>markdown</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="Transaction"><span class="iconfont-archer">&#xe606;</span>Transaction</span>
+    
+        <span class="sidebar-tag-name" data-tags="爬虫的原理"><span class="iconfont-archer">&#xe606;</span>爬虫的原理</span>
+    
+        <span class="sidebar-tag-name" data-tags="爬虫架构"><span class="iconfont-archer">&#xe606;</span>爬虫架构</span>
+    
+        <span class="sidebar-tag-name" data-tags="Session共享"><span class="iconfont-archer">&#xe606;</span>Session共享</span>
+    
+        <span class="sidebar-tag-name" data-tags="个人简历"><span class="iconfont-archer">&#xe606;</span>个人简历</span>
+    
+        <span class="sidebar-tag-name" data-tags="实习生"><span class="iconfont-archer">&#xe606;</span>实习生</span>
+    
+        <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
+    
+        <span class="sidebar-tag-name" data-tags="ServiceLog"><span class="iconfont-archer">&#xe606;</span>ServiceLog</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构优化"><span class="iconfont-archer">&#xe606;</span>架构优化</span>
+    
+        <span class="sidebar-tag-name" data-tags="FT中文网"><span class="iconfont-archer">&#xe606;</span>FT中文网</span>
+    
+        <span class="sidebar-tag-name" data-tags="区块链"><span class="iconfont-archer">&#xe606;</span>区块链</span>
+    
+        <span class="sidebar-tag-name" data-tags="SSM"><span class="iconfont-archer">&#xe606;</span>SSM</span>
+    
+        <span class="sidebar-tag-name" data-tags="Web"><span class="iconfont-archer">&#xe606;</span>Web</span>
+    
+        <span class="sidebar-tag-name" data-tags="Bootstrap"><span class="iconfont-archer">&#xe606;</span>Bootstrap</span>
+    
+        <span class="sidebar-tag-name" data-tags="Service"><span class="iconfont-archer">&#xe606;</span>Service</span>
+    
+        <span class="sidebar-tag-name" data-tags="增删改查"><span class="iconfont-archer">&#xe606;</span>增删改查</span>
+    
+        <span class="sidebar-tag-name" data-tags="RowsLock"><span class="iconfont-archer">&#xe606;</span>RowsLock</span>
+    
+        <span class="sidebar-tag-name" data-tags="高并发"><span class="iconfont-archer">&#xe606;</span>高并发</span>
+    
+        <span class="sidebar-tag-name" data-tags="SpringBoot"><span class="iconfont-archer">&#xe606;</span>SpringBoot</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="mysql"><span class="iconfont-archer">&#xe60a;</span>mysql</span>
+    
+        <span class="sidebar-category-name" data-categories="spring"><span class="iconfont-archer">&#xe60a;</span>spring</span>
+    
+        <span class="sidebar-category-name" data-categories="Redis"><span class="iconfont-archer">&#xe60a;</span>Redis</span>
+    
+        <span class="sidebar-category-name" data-categories="Seckill"><span class="iconfont-archer">&#xe60a;</span>Seckill</span>
+    
+        <span class="sidebar-category-name" data-categories="SpringBoot"><span class="iconfont-archer">&#xe60a;</span>SpringBoot</span>
+    
+        <span class="sidebar-category-name" data-categories="区块链-Blockchain"><span class="iconfont-archer">&#xe60a;</span>区块链-Blockchain</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div>
+
+    <script>
+    var siteMeta = {
+        root: '/',
+        author: 'LiGang'
+    }
+</script>
+    <!-- busuanzi  -->
+    
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+    
+    </body>
+</html>
+
+

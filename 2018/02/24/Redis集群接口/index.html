@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html>
+    <!-- title -->
+
+
+
+
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
+    <title>Redis接口的编写 · LoveMorgana&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+        box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s 1;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= /css/style.css?v=20180317 as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" type="text/css" href= /css/mobile.css?v=20180317 media="(max-width: 980px)"/>
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        
+    <link rel="icon" href= /assets/favicon.ico>
+    <script>
+        (function (w) {
+            "use strict";
+            // rel=preload support test
+            if (!w.loadCSS) {
+                w.loadCSS = function () { };
+            }
+            // define on the loadCSS obj
+            var rp = loadCSS.relpreload = {};
+            // rel=preload feature support test
+            // runs once and returns a function for compat purposes
+            rp.support = (function () {
+                var ret;
+                try {
+                    ret = w.document.createElement("link").relList.supports("preload");
+                } catch (e) {
+                    ret = false;
+                }
+                return function () {
+                    return ret;
+                };
+            })();
+
+            // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+            // then change that media back to its intended value on load
+            rp.bindMediaToggle = function (link) {
+                // remember existing media attr for ultimate state, or default to 'all'
+                var finalMedia = link.media || "all";
+
+                function enableStylesheet() {
+                    link.media = finalMedia;
+                }
+
+                // bind load handlers to enable media
+                if (link.addEventListener) {
+                    link.addEventListener("load", enableStylesheet);
+                } else if (link.attachEvent) {
+                    link.attachEvent("onload", enableStylesheet);
+                }
+
+                // Set rel and non-applicable media type to start an async request
+                // note: timeout allows this to happen async to let rendering continue in IE
+                setTimeout(function () {
+                    link.rel = "stylesheet";
+                    link.media = "only x";
+                });
+                // also enable media after 3 seconds,
+                // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+                setTimeout(enableStylesheet, 3000);
+            };
+
+            // loop through link elements in DOM
+            rp.poly = function () {
+                // double check this to prevent external calls from running
+                if (rp.support()) {
+                    return;
+                }
+                var links = w.document.getElementsByTagName("link");
+                for (var i = 0; i < links.length; i++) {
+                    var link = links[i];
+                    // qualify links to those with rel=preload and as=style attrs
+                    if (link.rel === "preload" && link.getAttribute("as") === "style" && !link.getAttribute("data-loadcss")) {
+                        // prevent rerunning on link
+                        link.setAttribute("data-loadcss", true);
+                        // bind listeners to toggle media back
+                        rp.bindMediaToggle(link);
+                    }
+                }
+            };
+
+            // if unsupported, run the polyfill
+            if (!rp.support()) {
+                // run once at least
+                rp.poly();
+
+                // rerun poly on an interval until onload
+                var run = w.setInterval(rp.poly, 500);
+                if (w.addEventListener) {
+                    w.addEventListener("load", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                } else if (w.attachEvent) {
+                    w.attachEvent("onload", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                }
+            }
+            // commonjs
+            if (typeof exports !== "undefined") {
+                exports.loadCSS = loadCSS;
+            }
+            else {
+                w.loadCSS = loadCSS;
+            }
+        }(typeof global !== "undefined" ? global : this));
+    </script>
+    <script src="//cdn.staticfile.org/jquery/3.2.1/jquery.min.js" defer></script>
+    <script src="/scripts/main.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+    <script>
+        (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+        (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date(); a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+        ga('create', 'UA-113782861-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >LoveMorgana&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Redis接口的编写</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>LoveMorgana's Blog</a>
+</header>
+
+    <div class="wrapper">
+        <div class="site-intro" style=
+
+
+
+
+
+
+
+
+height:50vh;
+
+>
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Redis接口的编写
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <!-- 文章页标签  -->
+            
+                <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Redis">Redis</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Redis-cluster">Redis-cluster</a>
+    
+</div>
+            
+            <div class="post-intro-meta">
+                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                <span class="post-intro-time">2018/02/24</span>
+                
+                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                    <span class="iconfont-archer">&#xe602;</span>
+                    <span id="busuanzi_value_page_pv"></span>
+                </span>
+                
+                <span class="shareWrapper">
+                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                    <span class="shareText">Share</span>
+                    <ul class="shareList">
+                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                            <div class="share-qrcode"></div>
+                        </li>
+                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                    </ul>
+                </span>
+            </div>
+        
+    </div>
+</div>
+        <script>
+  // load webfont-loader async, and add callback function
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+  
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntroTags = document.getElementsByClassName('post-intro-tags')[0],
+        postIntroMeat = document.getElementsByClassName('post-intro-meta')[0];
+      if (postIntroTags) {
+        postIntroTags.classList.add('post-fade-in');
+      }
+      if (postIntroMeat) {
+        postIntroMeat.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  async("https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", asyncCb)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p><a href="https://www.linuxidc.com/Linux/2016-12/138979.htm" target="_blank" rel="noopener">防火墙关闭,也可能对搭建有影响</a></p>
+<h2 id="使用redis-cli连接redis集群"><a href="#使用redis-cli连接redis集群" class="headerlink" title="使用redis-cli连接redis集群"></a>使用redis-cli连接redis集群</h2><p><code>redis01/redis-cli -h 192.168.25.133 -p 7001 -c</code></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-254223ec35185426.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>输入一个key=a,value=123.经过crc16算法对key进行hash化出来一个值,再对16384取余,就可以得到一个值,用这个值匹配对应的槽就可以了.</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-53e387300cfb2977.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>这样就可以证明我搭建成功了.不变红就是没连接上.</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-5f2e680c60d95c5f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<h2 id="测试单机版连接"><a href="#测试单机版连接" class="headerlink" title="测试单机版连接"></a>测试单机版连接</h2><p><a href="https://www.cnblogs.com/MyMaster-zf/p/5718625.html" target="_blank" rel="noopener">防火墙检查了都没连接上的办法.</a></p>
+<p>只能设置密码了.在<code>redis.conf</code>中设置<code>requirepass wsys</code>,其中<code>wsys</code>就是你设置的密码.</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-84dc8a7f488a1b23.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>测试代码</strong><br><figure class="highlight processing"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> class JedisTest &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Logger logger = LoggerFactory.getLogger(<span class="keyword">this</span>.getClass());</span><br><span class="line">    @Test</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> jedisTest() <span class="keyword">throws</span> Exception&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Jedis jedis = <span class="keyword">new</span> Jedis(<span class="string">"192.168.25.133"</span>, <span class="number">6379</span>);</span><br><span class="line">            jedis.auth(<span class="string">"wsys"</span>);</span><br><span class="line">            <span class="keyword">String</span> a = jedis.<span class="built_in">set</span>(<span class="string">"a"</span>, <span class="string">"123"</span>);</span><br><span class="line">            <span class="keyword">String</span> a1 = jedis.<span class="built_in">get</span>(<span class="string">"a"</span>);</span><br><span class="line">            System.out.<span class="built_in">println</span>(a1);</span><br><span class="line">            jedis.close();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            logger.error(e.getMessage(), e);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong>JedisPool测试代码</strong><br><figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> jedisPoolTest() throws Exception&#123;</span><br><span class="line">       <span class="built_in">try</span> &#123;</span><br><span class="line">           <span class="comment">//创建一个连接池对象,两个参数host,port</span></span><br><span class="line">           JedisPool jedisPool = <span class="keyword">new</span> JedisPool(<span class="string">"192.168.25.133"</span>, <span class="number">6379</span>);</span><br><span class="line">           Jedis jedis= jedisPool.getResource();</span><br><span class="line">           jedis.auth(<span class="string">"wsys"</span>);</span><br><span class="line">           <span class="keyword">String</span> a = jedis.<span class="built_in">get</span>(<span class="string">"a"</span>);</span><br><span class="line">           System.out.<span class="built_in">println</span>(<span class="string">"jedisPool中取: "</span>+a);</span><br><span class="line">           jedis.<span class="built_in">close</span>();</span><br><span class="line">           jedisPool.<span class="built_in">close</span>();</span><br><span class="line">       &#125; <span class="built_in">catch</span> (Exception e) &#123;</span><br><span class="line">           logger.error(e.getMessage(), e);</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong>jedisCluster测试</strong></p>
+<p>如果出现<code>java.lang.NumberFormatException</code>这个错误,需要把jedis的maven依赖版本调高点,<code>2.9.0</code>就可以了<br><figure class="highlight processing"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">@Test</span><br><span class="line">   <span class="keyword">public</span> <span class="keyword">void</span> jedisClusterTest() <span class="keyword">throws</span> Exception&#123;</span><br><span class="line">       <span class="keyword">try</span> &#123;</span><br><span class="line">           <span class="comment">//创建一个JedisCluster对象,有一个参数nodes是一个set类型,set中包含若干个HostAndPort对象.</span></span><br><span class="line">           Set&lt;HostAndPort&gt; nodes =<span class="keyword">new</span> HashSet&lt;&gt;();</span><br><span class="line">           nodes.<span class="built_in">add</span>(<span class="keyword">new</span> HostAndPort(<span class="string">"192.168.25.133"</span>,<span class="number">7001</span>));</span><br><span class="line">           nodes.<span class="built_in">add</span>(<span class="keyword">new</span> HostAndPort(<span class="string">"192.168.25.133"</span>,<span class="number">7002</span>));</span><br><span class="line">           nodes.<span class="built_in">add</span>(<span class="keyword">new</span> HostAndPort(<span class="string">"192.168.25.133"</span>,<span class="number">7003</span>));</span><br><span class="line">           nodes.<span class="built_in">add</span>(<span class="keyword">new</span> HostAndPort(<span class="string">"192.168.25.133"</span>,<span class="number">7004</span>));</span><br><span class="line">           nodes.<span class="built_in">add</span>(<span class="keyword">new</span> HostAndPort(<span class="string">"192.168.25.133"</span>,<span class="number">7005</span>));</span><br><span class="line">           nodes.<span class="built_in">add</span>(<span class="keyword">new</span> HostAndPort(<span class="string">"192.168.25.133"</span>,<span class="number">7006</span>));</span><br><span class="line">           JedisCluster jedisCluster = <span class="keyword">new</span> JedisCluster(nodes);</span><br><span class="line">           jedisCluster.<span class="built_in">set</span>(<span class="string">"b"</span>, <span class="string">"12"</span>);</span><br><span class="line">           <span class="keyword">String</span> b = jedisCluster.<span class="built_in">get</span>(<span class="string">"b"</span>);</span><br><span class="line">           System.out.<span class="built_in">println</span>(<span class="string">"jedisCluster: "</span>+b);</span><br><span class="line">           jedisCluster.close();</span><br><span class="line">           <span class="comment">//java.lang.NumberFormatException</span></span><br><span class="line">       &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">           logger.error(e.getMessage(), e);</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong>总结</strong></p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>.单机版用jedispool来操作jedis.</span><br><span class="line"><span class="number">2</span>.集群版直接使用jedisCluster就可以了.</span><br></pre></td></tr></table></figure>
+<h2 id="编写jedisclient的接口以及单机版-amp-amp-集群版的实现类"><a href="#编写jedisclient的接口以及单机版-amp-amp-集群版的实现类" class="headerlink" title="编写jedisclient的接口以及单机版&amp;&amp;集群版的实现类"></a>编写jedisclient的接口以及单机版&amp;&amp;集群版的实现类</h2><p>1.jedisClient<br><figure class="highlight processing"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> interface JedisClient &#123;</span><br><span class="line">    <span class="comment">//字符串的操作</span></span><br><span class="line">    <span class="keyword">String</span> <span class="built_in">set</span>(<span class="keyword">String</span> <span class="built_in">key</span>,<span class="keyword">String</span> value);</span><br><span class="line">    <span class="keyword">String</span> <span class="built_in">get</span>(<span class="keyword">String</span> <span class="built_in">key</span>);</span><br><span class="line">    <span class="comment">//判断字符串的键值是否存在</span></span><br><span class="line">    Boolean exists(<span class="keyword">String</span> <span class="built_in">key</span>);</span><br><span class="line">    <span class="comment">//过期时间的设置</span></span><br><span class="line">    Long expire(<span class="keyword">String</span> <span class="built_in">key</span>,<span class="built_in">int</span> seconds);</span><br><span class="line">    <span class="comment">//剩余过期时间</span></span><br><span class="line">    Long ttl(<span class="keyword">String</span> <span class="built_in">key</span>);</span><br><span class="line">    <span class="comment">//hash类型的操作</span></span><br><span class="line">    Long hset(<span class="keyword">String</span> <span class="built_in">key</span>,<span class="keyword">String</span> field,<span class="keyword">String</span> value);</span><br><span class="line">    <span class="comment">//增加1</span></span><br><span class="line">    Long incr(<span class="keyword">String</span> <span class="built_in">key</span>);</span><br><span class="line">    <span class="comment">//查询hash类型</span></span><br><span class="line">    <span class="keyword">String</span> hget(<span class="keyword">String</span> <span class="built_in">key</span>,<span class="keyword">String</span> field);</span><br><span class="line">    <span class="comment">//删除hash类型</span></span><br><span class="line">    Long hdel(<span class="keyword">String</span> <span class="built_in">key</span>,<span class="keyword">String</span>... field);</span><br><span class="line">    <span class="comment">//判断hash类型是否存在</span></span><br><span class="line">    Boolean hexists(<span class="keyword">String</span> <span class="built_in">key</span>,<span class="keyword">String</span> field);</span><br><span class="line">    <span class="comment">//查询所有hash的值</span></span><br><span class="line">    List&lt;<span class="keyword">String</span>&gt; hvals(<span class="keyword">String</span> <span class="built_in">key</span>);</span><br><span class="line">    <span class="comment">//删除一个键值对</span></span><br><span class="line">    Long del(<span class="keyword">String</span> <span class="built_in">key</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>2.jedisClientPool<br><figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br></pre></td><td class="code"><pre><span class="line">package lups.<span class="keyword">org.common.jedis.impl;</span></span><br><span class="line"><span class="keyword"></span></span><br><span class="line"><span class="keyword">import </span><span class="keyword">java.util.List;</span></span><br><span class="line"><span class="keyword"></span></span><br><span class="line"><span class="keyword">import </span>lups.<span class="keyword">org.common.jedis.JedisClient;</span></span><br><span class="line"><span class="keyword">import </span>redis.clients.<span class="keyword">jedis.Jedis;</span></span><br><span class="line"><span class="keyword">import </span>redis.clients.<span class="keyword">jedis.JedisPool;</span></span><br><span class="line"><span class="keyword"></span></span><br><span class="line"><span class="keyword">public </span>class <span class="keyword">JedisClientPool </span>implements <span class="keyword">JedisClient </span>&#123;</span><br><span class="line">	</span><br><span class="line">	private <span class="keyword">JedisPool </span><span class="keyword">jedisPool;</span></span><br><span class="line"><span class="keyword"></span></span><br><span class="line"><span class="keyword">	</span>public <span class="keyword">JedisPool </span>getJedisPool() &#123;</span><br><span class="line">		return <span class="keyword">jedisPool;</span></span><br><span class="line"><span class="keyword">	</span>&#125;</span><br><span class="line"></span><br><span class="line">	public void setJedisPool(<span class="keyword">JedisPool </span><span class="keyword">jedisPool) </span>&#123;</span><br><span class="line">		this.<span class="keyword">jedisPool </span>= <span class="keyword">jedisPool;</span></span><br><span class="line"><span class="keyword">	</span>&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	public String set(String key, String value) &#123;</span><br><span class="line">		<span class="keyword">Jedis </span><span class="keyword">jedis </span>= <span class="keyword">jedisPool.getResource();</span></span><br><span class="line"><span class="keyword">	</span>	String result = <span class="keyword">jedis.set(key, </span>value)<span class="comment">;</span></span><br><span class="line">		<span class="keyword">jedis.close();</span></span><br><span class="line"><span class="keyword">	</span>	return result<span class="comment">;</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	public String get(String key) &#123;</span><br><span class="line">		<span class="keyword">Jedis </span><span class="keyword">jedis </span>= <span class="keyword">jedisPool.getResource();</span></span><br><span class="line"><span class="keyword">	</span>	String result = <span class="keyword">jedis.get(key);</span></span><br><span class="line"><span class="keyword">	</span>	<span class="keyword">jedis.close();</span></span><br><span class="line"><span class="keyword">	</span>	return result<span class="comment">;</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	public <span class="keyword">Boolean </span>exists(String key) &#123;</span><br><span class="line">		<span class="keyword">Jedis </span><span class="keyword">jedis </span>= <span class="keyword">jedisPool.getResource();</span></span><br><span class="line"><span class="keyword">	</span>	<span class="keyword">Boolean </span>result = <span class="keyword">jedis.exists(key);</span></span><br><span class="line"><span class="keyword">	</span>	<span class="keyword">jedis.close();</span></span><br><span class="line"><span class="keyword">	</span>	return result<span class="comment">;</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	public Long expire(String key, int seconds) &#123;</span><br><span class="line">		<span class="keyword">Jedis </span><span class="keyword">jedis </span>= <span class="keyword">jedisPool.getResource();</span></span><br><span class="line"><span class="keyword">	</span>	Long result = <span class="keyword">jedis.expire(key, </span>seconds)<span class="comment">;</span></span><br><span class="line">		<span class="keyword">jedis.close();</span></span><br><span class="line"><span class="keyword">	</span>	return result<span class="comment">;</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	public Long ttl(String key) &#123;</span><br><span class="line">		<span class="keyword">Jedis </span><span class="keyword">jedis </span>= <span class="keyword">jedisPool.getResource();</span></span><br><span class="line"><span class="keyword">	</span>	Long result = <span class="keyword">jedis.ttl(key);</span></span><br><span class="line"><span class="keyword">	</span>	<span class="keyword">jedis.close();</span></span><br><span class="line"><span class="keyword">	</span>	return result<span class="comment">;</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	public Long incr(String key) &#123;</span><br><span class="line">		<span class="keyword">Jedis </span><span class="keyword">jedis </span>= <span class="keyword">jedisPool.getResource();</span></span><br><span class="line"><span class="keyword">	</span>	Long result = <span class="keyword">jedis.incr(key);</span></span><br><span class="line"><span class="keyword">	</span>	<span class="keyword">jedis.close();</span></span><br><span class="line"><span class="keyword">	</span>	return result<span class="comment">;</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	public Long hset(String key, String field, String value) &#123;</span><br><span class="line">		<span class="keyword">Jedis </span><span class="keyword">jedis </span>= <span class="keyword">jedisPool.getResource();</span></span><br><span class="line"><span class="keyword">	</span>	Long result = <span class="keyword">jedis.hset(key, </span>field, value)<span class="comment">;</span></span><br><span class="line">		<span class="keyword">jedis.close();</span></span><br><span class="line"><span class="keyword">	</span>	return result<span class="comment">;</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	public String hget(String key, String field) &#123;</span><br><span class="line">		<span class="keyword">Jedis </span><span class="keyword">jedis </span>= <span class="keyword">jedisPool.getResource();</span></span><br><span class="line"><span class="keyword">	</span>	String result = <span class="keyword">jedis.hget(key, </span>field)<span class="comment">;</span></span><br><span class="line">		<span class="keyword">jedis.close();</span></span><br><span class="line"><span class="keyword">	</span>	return result<span class="comment">;</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	public Long hdel(String key, String... field) &#123;</span><br><span class="line">		<span class="keyword">Jedis </span><span class="keyword">jedis </span>= <span class="keyword">jedisPool.getResource();</span></span><br><span class="line"><span class="keyword">	</span>	Long result = <span class="keyword">jedis.hdel(key, </span>field)<span class="comment">;</span></span><br><span class="line">		<span class="keyword">jedis.close();</span></span><br><span class="line"><span class="keyword">	</span>	return result<span class="comment">;</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	public <span class="keyword">Boolean </span>hexists(String key, String field) &#123;</span><br><span class="line">		<span class="keyword">Jedis </span><span class="keyword">jedis </span>= <span class="keyword">jedisPool.getResource();</span></span><br><span class="line"><span class="keyword">	</span>	<span class="keyword">Boolean </span>result = <span class="keyword">jedis.hexists(key, </span>field)<span class="comment">;</span></span><br><span class="line">		<span class="keyword">jedis.close();</span></span><br><span class="line"><span class="keyword">	</span>	return result<span class="comment">;</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	public List&lt;String&gt; hvals(String key) &#123;</span><br><span class="line">		<span class="keyword">Jedis </span><span class="keyword">jedis </span>= <span class="keyword">jedisPool.getResource();</span></span><br><span class="line"><span class="keyword">	</span>	List&lt;String&gt; result = <span class="keyword">jedis.hvals(key);</span></span><br><span class="line"><span class="keyword">	</span>	<span class="keyword">jedis.close();</span></span><br><span class="line"><span class="keyword">	</span>	return result<span class="comment">;</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	public Long del(String key) &#123;</span><br><span class="line">		<span class="keyword">Jedis </span><span class="keyword">jedis </span>= <span class="keyword">jedisPool.getResource();</span></span><br><span class="line"><span class="keyword">	</span>	Long result = <span class="keyword">jedis.del(key);</span></span><br><span class="line"><span class="keyword">	</span>	<span class="keyword">jedis.close();</span></span><br><span class="line"><span class="keyword">	</span>	return result<span class="comment">;</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>3.jedisClientCluster<br><figure class="highlight processing"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> lups.org.common.jedis.impl;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> lups.org.common.jedis.JedisClient;</span><br><span class="line"><span class="keyword">import</span> redis.clients.jedis.JedisCluster;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> class JedisClientCluster implements JedisClient &#123;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">private</span> JedisCluster jedisCluster;</span><br><span class="line">	</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> JedisCluster getJedisCluster() &#123;</span><br><span class="line">		<span class="keyword">return</span> jedisCluster;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">void</span> setJedisCluster(JedisCluster jedisCluster) &#123;</span><br><span class="line">		<span class="keyword">this</span>.jedisCluster = jedisCluster;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">String</span> <span class="built_in">set</span>(<span class="keyword">String</span> <span class="built_in">key</span>, <span class="keyword">String</span> value) &#123;</span><br><span class="line">		<span class="keyword">return</span> jedisCluster.<span class="built_in">set</span>(<span class="built_in">key</span>, value);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">String</span> <span class="built_in">get</span>(<span class="keyword">String</span> <span class="built_in">key</span>) &#123;</span><br><span class="line">		<span class="keyword">return</span> jedisCluster.<span class="built_in">get</span>(<span class="built_in">key</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	<span class="keyword">public</span> Boolean exists(<span class="keyword">String</span> <span class="built_in">key</span>) &#123;</span><br><span class="line">		<span class="keyword">return</span> jedisCluster.exists(<span class="built_in">key</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	<span class="keyword">public</span> Long expire(<span class="keyword">String</span> <span class="built_in">key</span>, <span class="built_in">int</span> seconds) &#123;</span><br><span class="line">		<span class="keyword">return</span> jedisCluster.expire(<span class="built_in">key</span>, seconds);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	<span class="keyword">public</span> Long ttl(<span class="keyword">String</span> <span class="built_in">key</span>) &#123;</span><br><span class="line">		<span class="keyword">return</span> jedisCluster.ttl(<span class="built_in">key</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	<span class="keyword">public</span> Long incr(<span class="keyword">String</span> <span class="built_in">key</span>) &#123;</span><br><span class="line">		<span class="keyword">return</span> jedisCluster.incr(<span class="built_in">key</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	<span class="keyword">public</span> Long hset(<span class="keyword">String</span> <span class="built_in">key</span>, <span class="keyword">String</span> field, <span class="keyword">String</span> value) &#123;</span><br><span class="line">		<span class="keyword">return</span> jedisCluster.hset(<span class="built_in">key</span>, field, value);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">String</span> hget(<span class="keyword">String</span> <span class="built_in">key</span>, <span class="keyword">String</span> field) &#123;</span><br><span class="line">		<span class="keyword">return</span> jedisCluster.hget(<span class="built_in">key</span>, field);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	<span class="keyword">public</span> Long hdel(<span class="keyword">String</span> <span class="built_in">key</span>, <span class="keyword">String</span>... field) &#123;</span><br><span class="line">		<span class="keyword">return</span> jedisCluster.hdel(<span class="built_in">key</span>, field);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	<span class="keyword">public</span> Boolean hexists(<span class="keyword">String</span> <span class="built_in">key</span>, <span class="keyword">String</span> field) &#123;</span><br><span class="line">		<span class="keyword">return</span> jedisCluster.hexists(<span class="built_in">key</span>, field);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	<span class="keyword">public</span> List&lt;<span class="keyword">String</span>&gt; hvals(<span class="keyword">String</span> <span class="built_in">key</span>) &#123;</span><br><span class="line">		<span class="keyword">return</span> jedisCluster.hvals(<span class="built_in">key</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">	<span class="keyword">public</span> Long del(<span class="keyword">String</span> <span class="built_in">key</span>) &#123;</span><br><span class="line">		<span class="keyword">return</span> jedisCluster.del(<span class="built_in">key</span>);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+    </article>
+    <!-- 前后页  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2018/02/25/Redis集群的搭建/" title= Redis-cluster搭建 >
+                    <div class="nextTitle">Redis-cluster搭建</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2018/02/24/spring和redis整合/" title= Spring与Redis整合 >
+                    <div class="prevTitle">Spring与Redis整合</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid= MTAyMC8zNDE4Ni8xMDcyMw==>
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!--PC版-->
+
+    <!--PC版-->
+
+
+    
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:15733207536@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/lovemoganna" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title=wechat>
+                  
+                  <img class="profile-qr" src="/assets/wechat.jpg" />
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/luoyupiaoshang" class="iconfont-archer twitter" target="_blank" title=twitter></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://luoyupiaoshang.club/" target="_blank">luoyupiaoshang</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+        <span id="busuanzi_container_site_pv">访问总计 <span id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+    
+</footer>
+
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#使用redis-cli连接redis集群"><span class="toc-number">1.</span> <span class="toc-text">使用redis-cli连接redis集群</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#测试单机版连接"><span class="toc-number">2.</span> <span class="toc-text">测试单机版连接</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#编写jedisclient的接口以及单机版-amp-amp-集群版的实现类"><span class="toc-number">3.</span> <span class="toc-text">编写jedisclient的接口以及单机版&amp;&amp;集群版的实现类</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">归档</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">标签</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">分类</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-archive"> Total : 25 </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/03</span><a class="archive-post-title" href= "/2018/04/03/interview/" >李刚_产品经理实习生</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/28</span><a class="archive-post-title" href= "/2018/02/28/mysql设计以及架构优化/" >mysql设计以及架构优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/25</span><a class="archive-post-title" href= "/2018/02/25/Redis集群的搭建/" >Redis-cluster搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/redis/" >Redis基本操作</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/spring和redis整合/" >Spring与Redis整合</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/Redis集群接口/" >Redis接口的编写</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/22</span><a class="archive-post-title" href= "/2018/02/22/DB02-数据库字段设计规范/" >DB02-数据库字段设计规范</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span><a class="archive-post-title" href= "/2018/02/01/mysql日志划分/" >mysql服务器日志</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/27</span><a class="archive-post-title" href= "/2018/01/27/选择常规查询和慢速查询日志的输出目的地/" >选择常规查询和慢速查询日志的输出目的地</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span><a class="archive-post-title" href= "/2018/01/25/集群环境中解决Session共享问题/" >集群环境中解决Session共享问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/24</span><a class="archive-post-title" href= "/2018/01/24/ajax跨域问题/" >ajax跨域问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/09</span><a class="archive-post-title" href= "/2018/01/09/WebCrawler/" >WebCrawler-网络爬虫01</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/08</span><a class="archive-post-title" href= "/2018/01/08/区块链/" >区块链(Blockchain)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀Web层开发/" >秒杀web层开发</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀service层开发/" >秒杀Service层开发</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀高并发优化/" >秒杀高并发优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/Markdown/" >markdown语法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/秒杀概述/" >秒杀概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/数据库的基本操作/" >数据库的基本操作</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/秒杀Dao层开发/" >秒杀Dao层开发</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2017 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/apringData-01/" >springData-01</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/SpringData-02/" >springData-02</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/SpringData-03/" >springData-03</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href= "/2017/11/09/springboot/" >SpringBoot初识</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href= "/2017/11/09/Spring事务/" >Spring事务</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="mysql设计"><span class="iconfont-archer">&#xe606;</span>mysql设计</span>
+    
+        <span class="sidebar-tag-name" data-tags="springdata"><span class="iconfont-archer">&#xe606;</span>springdata</span>
+    
+        <span class="sidebar-tag-name" data-tags="Redis"><span class="iconfont-archer">&#xe606;</span>Redis</span>
+    
+        <span class="sidebar-tag-name" data-tags="Redis-cluster"><span class="iconfont-archer">&#xe606;</span>Redis-cluster</span>
+    
+        <span class="sidebar-tag-name" data-tags="markdown"><span class="iconfont-archer">&#xe606;</span>markdown</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="Transaction"><span class="iconfont-archer">&#xe606;</span>Transaction</span>
+    
+        <span class="sidebar-tag-name" data-tags="爬虫的原理"><span class="iconfont-archer">&#xe606;</span>爬虫的原理</span>
+    
+        <span class="sidebar-tag-name" data-tags="爬虫架构"><span class="iconfont-archer">&#xe606;</span>爬虫架构</span>
+    
+        <span class="sidebar-tag-name" data-tags="Session共享"><span class="iconfont-archer">&#xe606;</span>Session共享</span>
+    
+        <span class="sidebar-tag-name" data-tags="个人简历"><span class="iconfont-archer">&#xe606;</span>个人简历</span>
+    
+        <span class="sidebar-tag-name" data-tags="实习生"><span class="iconfont-archer">&#xe606;</span>实习生</span>
+    
+        <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
+    
+        <span class="sidebar-tag-name" data-tags="ServiceLog"><span class="iconfont-archer">&#xe606;</span>ServiceLog</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构优化"><span class="iconfont-archer">&#xe606;</span>架构优化</span>
+    
+        <span class="sidebar-tag-name" data-tags="FT中文网"><span class="iconfont-archer">&#xe606;</span>FT中文网</span>
+    
+        <span class="sidebar-tag-name" data-tags="区块链"><span class="iconfont-archer">&#xe606;</span>区块链</span>
+    
+        <span class="sidebar-tag-name" data-tags="SSM"><span class="iconfont-archer">&#xe606;</span>SSM</span>
+    
+        <span class="sidebar-tag-name" data-tags="Web"><span class="iconfont-archer">&#xe606;</span>Web</span>
+    
+        <span class="sidebar-tag-name" data-tags="Bootstrap"><span class="iconfont-archer">&#xe606;</span>Bootstrap</span>
+    
+        <span class="sidebar-tag-name" data-tags="Service"><span class="iconfont-archer">&#xe606;</span>Service</span>
+    
+        <span class="sidebar-tag-name" data-tags="增删改查"><span class="iconfont-archer">&#xe606;</span>增删改查</span>
+    
+        <span class="sidebar-tag-name" data-tags="RowsLock"><span class="iconfont-archer">&#xe606;</span>RowsLock</span>
+    
+        <span class="sidebar-tag-name" data-tags="高并发"><span class="iconfont-archer">&#xe606;</span>高并发</span>
+    
+        <span class="sidebar-tag-name" data-tags="SpringBoot"><span class="iconfont-archer">&#xe606;</span>SpringBoot</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="mysql"><span class="iconfont-archer">&#xe60a;</span>mysql</span>
+    
+        <span class="sidebar-category-name" data-categories="spring"><span class="iconfont-archer">&#xe60a;</span>spring</span>
+    
+        <span class="sidebar-category-name" data-categories="Redis"><span class="iconfont-archer">&#xe60a;</span>Redis</span>
+    
+        <span class="sidebar-category-name" data-categories="Seckill"><span class="iconfont-archer">&#xe60a;</span>Seckill</span>
+    
+        <span class="sidebar-category-name" data-categories="SpringBoot"><span class="iconfont-archer">&#xe60a;</span>SpringBoot</span>
+    
+        <span class="sidebar-category-name" data-categories="区块链-Blockchain"><span class="iconfont-archer">&#xe60a;</span>区块链-Blockchain</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div>
+
+    <script>
+    var siteMeta = {
+        root: '/',
+        author: 'LiGang'
+    }
+</script>
+    <!-- busuanzi  -->
+    
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+    
+    </body>
+</html>
+
+

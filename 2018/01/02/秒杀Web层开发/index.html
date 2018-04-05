@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html>
+    <!-- title -->
+
+
+
+
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
+    <title>秒杀web层开发 · LoveMorgana&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+        box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s 1;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= /css/style.css?v=20180317 as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" type="text/css" href= /css/mobile.css?v=20180317 media="(max-width: 980px)"/>
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        
+    <link rel="icon" href= /assets/favicon.ico>
+    <script>
+        (function (w) {
+            "use strict";
+            // rel=preload support test
+            if (!w.loadCSS) {
+                w.loadCSS = function () { };
+            }
+            // define on the loadCSS obj
+            var rp = loadCSS.relpreload = {};
+            // rel=preload feature support test
+            // runs once and returns a function for compat purposes
+            rp.support = (function () {
+                var ret;
+                try {
+                    ret = w.document.createElement("link").relList.supports("preload");
+                } catch (e) {
+                    ret = false;
+                }
+                return function () {
+                    return ret;
+                };
+            })();
+
+            // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+            // then change that media back to its intended value on load
+            rp.bindMediaToggle = function (link) {
+                // remember existing media attr for ultimate state, or default to 'all'
+                var finalMedia = link.media || "all";
+
+                function enableStylesheet() {
+                    link.media = finalMedia;
+                }
+
+                // bind load handlers to enable media
+                if (link.addEventListener) {
+                    link.addEventListener("load", enableStylesheet);
+                } else if (link.attachEvent) {
+                    link.attachEvent("onload", enableStylesheet);
+                }
+
+                // Set rel and non-applicable media type to start an async request
+                // note: timeout allows this to happen async to let rendering continue in IE
+                setTimeout(function () {
+                    link.rel = "stylesheet";
+                    link.media = "only x";
+                });
+                // also enable media after 3 seconds,
+                // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+                setTimeout(enableStylesheet, 3000);
+            };
+
+            // loop through link elements in DOM
+            rp.poly = function () {
+                // double check this to prevent external calls from running
+                if (rp.support()) {
+                    return;
+                }
+                var links = w.document.getElementsByTagName("link");
+                for (var i = 0; i < links.length; i++) {
+                    var link = links[i];
+                    // qualify links to those with rel=preload and as=style attrs
+                    if (link.rel === "preload" && link.getAttribute("as") === "style" && !link.getAttribute("data-loadcss")) {
+                        // prevent rerunning on link
+                        link.setAttribute("data-loadcss", true);
+                        // bind listeners to toggle media back
+                        rp.bindMediaToggle(link);
+                    }
+                }
+            };
+
+            // if unsupported, run the polyfill
+            if (!rp.support()) {
+                // run once at least
+                rp.poly();
+
+                // rerun poly on an interval until onload
+                var run = w.setInterval(rp.poly, 500);
+                if (w.addEventListener) {
+                    w.addEventListener("load", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                } else if (w.attachEvent) {
+                    w.attachEvent("onload", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                }
+            }
+            // commonjs
+            if (typeof exports !== "undefined") {
+                exports.loadCSS = loadCSS;
+            }
+            else {
+                w.loadCSS = loadCSS;
+            }
+        }(typeof global !== "undefined" ? global : this));
+    </script>
+    <script src="//cdn.staticfile.org/jquery/3.2.1/jquery.min.js" defer></script>
+    <script src="/scripts/main.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+    <script>
+        (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+        (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date(); a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+        ga('create', 'UA-113782861-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >LoveMorgana&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">秒杀web层开发</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>LoveMorgana's Blog</a>
+</header>
+
+    <div class="wrapper">
+        <div class="site-intro" style=
+
+
+
+
+
+
+
+
+height:50vh;
+
+>
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            秒杀web层开发
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <!-- 文章页标签  -->
+            
+                <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "SSM">SSM</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Web">Web</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Bootstrap">Bootstrap</a>
+    
+</div>
+            
+            <div class="post-intro-meta">
+                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                <span class="post-intro-time">2018/01/02</span>
+                
+                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                    <span class="iconfont-archer">&#xe602;</span>
+                    <span id="busuanzi_value_page_pv"></span>
+                </span>
+                
+                <span class="shareWrapper">
+                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                    <span class="shareText">Share</span>
+                    <ul class="shareList">
+                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                            <div class="share-qrcode"></div>
+                        </li>
+                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                    </ul>
+                </span>
+            </div>
+        
+    </div>
+</div>
+        <script>
+  // load webfont-loader async, and add callback function
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+  
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntroTags = document.getElementsByClassName('post-intro-tags')[0],
+        postIntroMeat = document.getElementsByClassName('post-intro-meta')[0];
+      if (postIntroTags) {
+        postIntroTags.classList.add('post-fade-in');
+      }
+      if (postIntroMeat) {
+        postIntroMeat.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  async("https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", asyncCb)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="主要内容"><a href="#主要内容" class="headerlink" title="主要内容"></a>主要内容</h2><ol>
+<li>前端交互设计</li>
+<li>Restful</li>
+<li>springmvc</li>
+<li>bootstrap+jquery</li>
+</ol>
+<h2 id="前端交互设计"><a href="#前端交互设计" class="headerlink" title="前端交互设计"></a>前端交互设计</h2><ol>
+<li>产品</li>
+<li>前端</li>
+<li>后端</li>
+</ol>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-8aad1b29e7b4525e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>详情页流程逻辑</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-e6263a73fb5ef628.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<h2 id="Restful接口设计"><a href="#Restful接口设计" class="headerlink" title="Restful接口设计"></a>Restful接口设计</h2><h3 id="什么是Restful"><a href="#什么是Restful" class="headerlink" title="什么是Restful"></a>什么是Restful</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">REST是英文representational state transfer(表象性状态转变)或者表述性状态转移;</span><br><span class="line">Rest是web服务的一种架构风格;</span><br><span class="line">使用HTTP,URI,XML,JSON,HTML等广泛流行的标准和协议;轻量级,跨平台,跨语言的架构设计;</span><br><span class="line">它是一种设计风格,不是一种标准,是一种思想.</span><br><span class="line"></span><br><span class="line">Restful兴起于Rails,是一种优雅的URL表述方式,资源的状态和状态转移.</span><br></pre></td></tr></table></figure>
+<h3 id="Rest架构的风格"><a href="#Rest架构的风格" class="headerlink" title="Rest架构的风格"></a>Rest架构的风格</h3><p>Rest架构的主要原则<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">网络上的所有事物都被抽象为资源</span><br><span class="line"></span><br><span class="line">每个资源都有一个唯一的资源标识符</span><br><span class="line"></span><br><span class="line">同一个资源具有多种表现形式(xml,json等)</span><br><span class="line"></span><br><span class="line">对资源的各种操作不会改变资源标识符</span><br><span class="line"></span><br><span class="line">所有的操作都是无状态的</span><br><span class="line"></span><br><span class="line">符合REST原则的架构方式即可称为RESTful</span><br></pre></td></tr></table></figure></p>
+<h3 id="Restful的示例"><a href="#Restful的示例" class="headerlink" title="Restful的示例"></a>Restful的示例</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">GET   /Seckill/list   风格友好</span><br><span class="line">POST /Seckill/execute/&#123;seckillId&#125; 风格不友好 </span><br><span class="line">POST /Seckill/&#123;seckillId&#125;/execute 风格友好</span><br><span class="line"></span><br><span class="line">GET /seckill/delete/&#123;id&#125; 风格不友好</span><br><span class="line">GET /seckill/&#123;id&#125;/delete 风格友好</span><br></pre></td></tr></table></figure>
+<h3 id="Restful规范"><a href="#Restful规范" class="headerlink" title="Restful规范"></a>Restful规范</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">GET     --&gt;查询操作</span><br><span class="line">POST    --&gt;添加/修改操作</span><br><span class="line">PUT     --&gt;修改操作</span><br><span class="line">DELETE  --&gt;删除操作</span><br></pre></td></tr></table></figure>
+<p>图示:</p>
+<p><img src="http://img.blog.csdn.net/20170625151347639?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvY2hlbnhpYW9jaGFu/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center" alt=""></p>
+<p>HTTP状态码:</p>
+<p><img src="http://img.blog.csdn.net/20170625152145836?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvY2hlbnhpYW9jaGFu/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center" alt=""></p>
+<h3 id="springmvc中实现Restful服务"><a href="#springmvc中实现Restful服务" class="headerlink" title="springmvc中实现Restful服务"></a>springmvc中实现Restful服务</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">SpringMVC实现restful服务:</span><br><span class="line">SpringMVC原生态的支持了REST风格的架构设计</span><br><span class="line">所涉及到的注解:</span><br><span class="line">--@RequestMapping</span><br><span class="line">--@PathVariable</span><br><span class="line">--@ResponseBody</span><br></pre></td></tr></table></figure>
+<h3 id="url的设计"><a href="#url的设计" class="headerlink" title="url的设计"></a>url的设计</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1. /模块/资源/&#123;标示&#125;/集合1/...</span><br><span class="line">良好的表示如下:</span><br><span class="line">    2. /user/&#123;uid&#125;/friends    --&gt;好友列表</span><br><span class="line">    3. /user/&#123;uid&#125;/followers  --&gt;关注者列表</span><br></pre></td></tr></table></figure>
+<p><strong>秒杀API的URL设计</strong><br><figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">GET <span class="string">/seckill/list</span>                   秒杀列表</span><br><span class="line">GET <span class="string">/seckill/</span>&#123;id&#125;<span class="string">/detail</span>            详情页面</span><br><span class="line">GET <span class="string">/seckill/time/now</span>               系统时间</span><br><span class="line">POST <span class="string">/seckill/</span>&#123;id&#125;<span class="string">/exposer</span>          暴露秒杀</span><br><span class="line">POST <span class="string">/seckill/</span>&#123;id&#125;/&#123;md5&#125;<span class="string">/execution</span>  执行秒杀</span><br></pre></td></tr></table></figure></p>
+<h2 id="SpringMVC的运行流程"><a href="#SpringMVC的运行流程" class="headerlink" title="SpringMVC的运行流程"></a>SpringMVC的运行流程</h2><h3 id="我们始终围绕着Handler开发-如下"><a href="#我们始终围绕着Handler开发-如下" class="headerlink" title="我们始终围绕着Handler开发,如下:"></a>我们始终围绕着Handler开发,如下:</h3><p><img src="http://upload-images.jianshu.io/upload_images/7505161-a7b951d96de382f4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<h3 id="SpringMVC的运行流程-1"><a href="#SpringMVC的运行流程-1" class="headerlink" title="SpringMVC的运行流程"></a>SpringMVC的运行流程</h3><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">1.用户发送请求到<span class="selector-tag">DispatchServlet</span></span><br><span class="line"></span><br><span class="line">2<span class="selector-class">.DispatchServlet</span>根据请求路径查询具体的<span class="selector-tag">Handler</span></span><br><span class="line"></span><br><span class="line">3<span class="selector-class">.HandlerMapping</span>返回一个<span class="selector-tag">HandlerExcutionChain</span>给<span class="selector-tag">DispatchServlet</span></span><br><span class="line"></span><br><span class="line">　<span class="selector-tag">HandlerExcutionChain</span>：<span class="selector-tag">Handler</span>和<span class="selector-tag">Interceptor</span>集合</span><br><span class="line"></span><br><span class="line">4<span class="selector-class">.DispatchServlet</span>调用<span class="selector-tag">HandlerAdapter</span>适配器</span><br><span class="line"></span><br><span class="line">5<span class="selector-class">.HandlerAdapter</span>调用具体的<span class="selector-tag">Handler</span>处理业务</span><br><span class="line"></span><br><span class="line">6<span class="selector-class">.Handler</span>处理结束返回一个具体的<span class="selector-tag">ModelAndView</span>给适配器</span><br><span class="line"></span><br><span class="line">   <span class="selector-tag">ModelAndView</span><span class="selector-pseudo">:model--</span>&gt;数据模型，<span class="selector-tag">view--</span>&gt;视图名称</span><br><span class="line"></span><br><span class="line">7.适配器将<span class="selector-tag">ModelAndView</span>给<span class="selector-tag">DispatchServlet</span></span><br><span class="line"></span><br><span class="line">8<span class="selector-class">.DispatchServlet</span>把视图名称给<span class="selector-tag">ViewResolver</span>视图解析器</span><br><span class="line"></span><br><span class="line">9<span class="selector-class">.ViewResolver</span>返回一个具体的视图给<span class="selector-tag">DispatchServlet</span></span><br><span class="line"></span><br><span class="line">10.渲染视图</span><br><span class="line"></span><br><span class="line">11.展示给用户</span><br></pre></td></tr></table></figure>
+<p>图示:</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-df43c8d02cff87c3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<h3 id="Http处理地址映射原理"><a href="#Http处理地址映射原理" class="headerlink" title="Http处理地址映射原理"></a>Http处理地址映射原理</h3><p><img src="http://upload-images.jianshu.io/upload_images/7505161-df748190bd76bbf0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<h3 id="注解映射示例"><a href="#注解映射示例" class="headerlink" title="注解映射示例"></a>注解映射示例</h3><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RequestMapping</span>注解:</span><br><span class="line"><span class="number">1.</span> 支持标准的URL</span><br><span class="line"><span class="number">2.</span> Ant风格URL(以?和** 等字符)</span><br><span class="line">3. 带(XXX)占位符的URL</span><br><span class="line"></span><br><span class="line">for example:</span><br><span class="line"><span class="number">1.</span> <span class="regexp">/user/</span>*/creation</span><br><span class="line">匹配 <span class="regexp">/user/</span>aaa<span class="regexp">/creation,/</span>user<span class="regexp">/bbb/</span>creation等URL</span><br><span class="line"><span class="number">2.</span> <span class="regexp">/user/</span>**/creation </span><br><span class="line">匹配 <span class="regexp">/usr/</span>creation,  <span class="regexp">/user/</span>aaa<span class="regexp">/bbb/</span>creation等URL</span><br><span class="line"><span class="number">3.</span> <span class="regexp">/user/</span>&#123;userId&#125;</span><br><span class="line">匹配<span class="regexp">/user/</span><span class="number">123</span>,<span class="regexp">/user/</span>abc等URL</span><br><span class="line"><span class="number">4.</span> <span class="regexp">/company/</span>&#123;companyId&#125;<span class="regexp">/user/</span>&#123;userId&#125;/detail</span><br><span class="line">匹配<span class="regexp">/company/</span><span class="number">123</span><span class="regexp">/user/</span><span class="number">456</span>/detail等URL</span><br></pre></td></tr></table></figure>
+<h2 id="请求方法细节的处理"><a href="#请求方法细节的处理" class="headerlink" title="请求方法细节的处理"></a>请求方法细节的处理</h2><p>包括:<br><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">1. </span>请求参数的绑定</span><br><span class="line"><span class="bullet">2. </span>请求方式限制</span><br><span class="line"><span class="bullet">3. </span>请求转发和重定向</span><br><span class="line"><span class="bullet">4. </span>数据模型赋值</span><br><span class="line"><span class="bullet">5. </span>返回JSON数据</span><br><span class="line"><span class="bullet">6. </span>cookie访问</span><br></pre></td></tr></table></figure></p>
+<h3 id="参数绑定的示例"><a href="#参数绑定的示例" class="headerlink" title="参数绑定的示例"></a>参数绑定的示例</h3><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RequestMapping(value=<span class="meta-string">"/&#123;seckillId&#125;/detail"</span>,mnethod=RequestMethod.GET)</span></span><br><span class="line"><span class="keyword">public</span> String detail(<span class="meta">@PathVariable(<span class="meta-string">"seckillId"</span>)</span><span class="built_in">Long</span> seckillId,Model model)&#123;</span><br><span class="line">    <span class="keyword">if</span>(seckillId == <span class="literal">null</span>)&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"redirect:/seckill/list"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    Seckill seckill=SeckillService.getById|(seckillId);</span><br><span class="line">    <span class="keyword">if</span>(seckill == <span class="literal">null</span>)&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"forward:/seckill/list"</span>; </span><br><span class="line">    &#125;</span><br><span class="line">    model.addAttribute(<span class="string">"seckill"</span>,seckill);</span><br><span class="line">    <span class="keyword">return</span> <span class="string">"detail"</span>;<span class="comment">//view</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="返回json数据的示例"><a href="#返回json数据的示例" class="headerlink" title="返回json数据的示例"></a>返回json数据的示例</h3><figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RequestMapping</span>(value=<span class="string">"/&#123;seckillId&#125;/&#123;md5&#125;/execution"</span>,method=RequestMethod.POST,produces=&#123;<span class="string">"application/json;charset=UTF-8"</span>&#125;)</span><br><span class="line"><span class="meta">@ResponseBody</span></span><br><span class="line"><span class="keyword">public</span> SeckillResult&lt;Exposer&gt; exposerSeckillURL(<span class="meta">@PathVariable</span>(<span class="string">"id"</span>)<span class="keyword">long</span> id)&#123;</span><br><span class="line"> SeckillResult&lt;Exposer&gt; result;</span><br><span class="line"> <span class="keyword">try</span>&#123;</span><br><span class="line">    Exposer exposer =...</span><br><span class="line"> &#125;</span><br><span class="line"> <span class="keyword">catch</span>(Exception e)&#123;</span><br><span class="line">    logger.<span class="keyword">error</span>(e.getMessage(),e);</span><br><span class="line">   result=<span class="keyword">new</span> SeckillResult&lt;Exposer&gt;(<span class="keyword">false</span>,e.getMessage());</span><br><span class="line"> &#125;</span><br><span class="line"> <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Cookie访问的示例"><a href="#Cookie访问的示例" class="headerlink" title="Cookie访问的示例"></a>Cookie访问的示例</h3><p>@CookieValue(value=”killPhone”,required=false)long phone)</p>
+<p>如果请求的RequestMapping里面没有包含killPhone的Cookie,SpringMVC框架就会报错,所以要设置成false.具体的判断要在程序里面判断.</p>
+<figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RequestMapping</span>(value=<span class="string">"/&#123;seckillId&#125;/&#123;md5&#125;/execution"</span>,method=RequestMethod.POST)</span><br><span class="line"><span class="keyword">public</span> SeckillResult&lt;SeckillExecution&gt; execute(<span class="meta">@PathVariable</span>(<span class="string">"seckillId"</span>)<span class="keyword">long</span> seckillId,<span class="meta">@PathVariable</span>(<span class="string">"md5"</span>)String md5,<span class="meta">@CookieValue</span>(value=<span class="string">"killPhone"</span>,required=<span class="keyword">false</span>)<span class="keyword">long</span> phone)&#123;</span><br><span class="line">    <span class="keyword">if</span>(phone ==<span class="keyword">null</span> )&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> SeckillResult&lt;SeckillExecution&gt;(<span class="keyword">false</span>,<span class="string">"电话未注册"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    SeckillExecution <span class="keyword">execution</span>=seckillService.executeSeckillByProcedure(seckillId,md5,phone);</span><br><span class="line">    SeckillResult&lt;SeckillExecution&gt; result=<span class="keyword">new</span> SeckillResult&lt;SeckillExecution&gt;(<span class="keyword">true</span>,<span class="keyword">execution</span>);</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="web-xml的配置"><a href="#web-xml的配置" class="headerlink" title="web.xml的配置"></a>web.xml的配置</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="php"><span class="meta">&lt;?</span>xml version=<span class="string">"1.0"</span> encoding=<span class="string">"UTF-8"</span><span class="meta">?&gt;</span></span></span><br><span class="line"><span class="tag">&lt;<span class="name">web-app</span> <span class="attr">xmlns</span>=<span class="string">"http://xmlns.jcp.org/xml/ns/javaee"</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xmlns:xsi</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">"http://xmlns.jcp.org/xml/ns/javaee</span></span></span><br><span class="line"><span class="tag"><span class="string">                      http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"</span></span></span><br><span class="line"><span class="tag">         <span class="attr">version</span>=<span class="string">"3.1"</span></span></span><br><span class="line"><span class="tag">         <span class="attr">metadata-complete</span>=<span class="string">"true"</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--配置DispactherServlet--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>seckill-dispacther<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">servlet-class</span>&gt;</span>org.springframework.web.servlet.DispatcherServlet<span class="tag">&lt;/<span class="name">servlet-class</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!--配置springmvc需要加载的配置文件--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">init-param</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">param-name</span>&gt;</span>contextConfigLocation<span class="tag">&lt;/<span class="name">param-name</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">param-value</span>&gt;</span>classpath:spring/spring-*.xml<span class="tag">&lt;/<span class="name">param-value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">init-param</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">servlet</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet-mapping</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>seckill-dispacther<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!--默认匹配所有的请求--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">url-pattern</span>&gt;</span>/<span class="tag">&lt;/<span class="name">url-pattern</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">servlet-mapping</span>&gt;</span></span><br><span class="line">    </span><br><span class="line"><span class="tag">&lt;/<span class="name">web-app</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="spring-web-xml的配置"><a href="#spring-web-xml的配置" class="headerlink" title="spring-web.xml的配置"></a>spring-web.xml的配置</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span><br><span class="line">&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;</span><br><span class="line">       xmlns:mvc=&quot;http://www.springframework.org/schema/mvc&quot;</span><br><span class="line">       xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span><br><span class="line">       xmlns:context=&quot;http://www.springframework.org/schema/context&quot;</span><br><span class="line">       xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans</span><br><span class="line">http://www.springframework.org/schema/beans/spring-beans.xsd</span><br><span class="line">http://www.springframework.org/schema/mvc</span><br><span class="line">http://www.springframework.org/schema/mvc/spring-mvc.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd&quot;&gt;</span><br><span class="line">    &lt;!--配置SpringMVC--&gt;</span><br><span class="line">    &lt;!--1.开启SpringMVC注解模式--&gt;</span><br><span class="line">    &lt;!--简化配置:</span><br><span class="line">        1. 自动注册DefaultAnnotationHandlerMapping,AnnotationMethodHandlerDdapter</span><br><span class="line">        2. 提供一系列:数据绑定,数字和日期.和Format @NumberFormat,@DataTimeFormat,xml,json默认读写支持</span><br><span class="line">    --&gt;</span><br><span class="line">    &lt;mvc:annotation-driven/&gt;</span><br><span class="line">    &lt;!--2.静态资源默认Servlet配置</span><br><span class="line">        1. 加入对静态资源的处理:js,gif,png</span><br><span class="line">        2. 允许使用&quot;/&quot;做整体映射</span><br><span class="line">    --&gt;</span><br><span class="line">    &lt;mvc:default-servlet-handler/&gt;</span><br><span class="line">    &lt;!--3.配置jsp,显示ViewResolver--&gt;</span><br><span class="line">    &lt;bean class=&quot;org.springframework.web.servlet.view.InternalResourceViewResolver&quot;&gt;</span><br><span class="line">        &lt;property name=&quot;viewClass&quot; value=&quot;org.springframework.web.servlet.view.JstlView&quot;/&gt;</span><br><span class="line">        &lt;property name=&quot;prefix&quot; value=&quot;/WEB-INF/jsp/&quot;/&gt;</span><br><span class="line">        &lt;property name=&quot;suffix&quot; value=&quot;./jsp&quot;/&gt;</span><br><span class="line">    &lt;/bean&gt;</span><br><span class="line">    &lt;!--4.扫描web相关的bean--&gt;</span><br><span class="line">    &lt;context:component-scan base-package=&quot;org.seckill.web&quot;/&gt;</span><br><span class="line">&lt;/beans&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="书写秒杀的Controller"><a href="#书写秒杀的Controller" class="headerlink" title="书写秒杀的Controller"></a>书写秒杀的Controller</h2><p>SeckillController<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">url的格式:     url:/模块/资源/&#123;id&#125;/细分   /seckill/&#123;id&#125;/list</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line">@Controller</span><br><span class="line">@RequestMapping(&quot;/seckill&quot;)</span><br><span class="line">public class SeckillController &#123;</span><br><span class="line">    private Logger logger = LoggerFactory.getLogger(this.getClass());</span><br><span class="line"></span><br><span class="line">    @Autowired</span><br><span class="line">    private SeckillService seckillService;</span><br><span class="line"></span><br><span class="line">    @RequestMapping(value = &quot;/list&quot;, method = RequestMethod.GET)</span><br><span class="line">    public String getList(Model model) &#123;</span><br><span class="line">        List&lt;Seckill&gt; list = seckillService.getAllSeckill();</span><br><span class="line">        model.addAttribute(&quot;list&quot;, list);</span><br><span class="line">        //list.jsp + model = ModelAndView</span><br><span class="line">        return &quot;list&quot;;//WEB-INF/jsp/&quot;list&quot;.jsp</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @RequestMapping(value = &quot;/&#123;seckillId&#125;/detail&quot;, method = RequestMethod.GET)</span><br><span class="line">    public String getDetail(@PathVariable(&quot;seckillId&quot;) Long seckillId, Model model) &#123;</span><br><span class="line">        if (seckillId == null) &#123;</span><br><span class="line">            return &quot;redirect:/seckill/list&quot;;</span><br><span class="line">        &#125;</span><br><span class="line">        Seckill seckill = seckillService.getBySeckillId(seckillId);</span><br><span class="line">        if (seckill == null) &#123;</span><br><span class="line">            return &quot;forward:/seckill/list&quot;;</span><br><span class="line">        &#125;</span><br><span class="line">        model.addAttribute(&quot;seckill&quot;, seckill);</span><br><span class="line">        return &quot;detail&quot;;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //ajax  json</span><br><span class="line">    @RequestMapping(value = &quot;/&#123;seckillId&#125;/exposer&quot;, method = RequestMethod.POST, produces = &#123;&quot;application/json;charset=UTF-8&quot;&#125;)</span><br><span class="line">    @ResponseBody</span><br><span class="line">    public SeckillResult&lt;Exposer&gt; exposer(@PathVariable(&quot;seckillId&quot;) Long seckillId) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            Exposer exposer = seckillService.exportSeckillUrl(seckillId);</span><br><span class="line">            return new SeckillResult&lt;Exposer&gt;(true, exposer);</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            logger.error(e.getMessage(), e);</span><br><span class="line">            return new SeckillResult&lt;Exposer&gt;(false, e.getMessage());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @RequestMapping(value = &quot;/&#123;seckillId&#125;/&#123;md5&#125;/execution&quot;, method = RequestMethod.POST, produces = &#123;</span><br><span class="line">            &quot;application/json; charset=utf-8&quot;&#125;)</span><br><span class="line">    @ResponseBody</span><br><span class="line">    public SeckillResult&lt;SeckillExecution&gt; execute(@PathVariable(&quot;seckillId&quot;) Long seckillId,</span><br><span class="line">                                                   @PathVariable(&quot;md5&quot;) String md5, @CookieValue(value = &quot;killPhone&quot;, required = false) Long phone) &#123;</span><br><span class="line">        // springmvc valid</span><br><span class="line">        if (phone == null) &#123;</span><br><span class="line">            return new SeckillResult&lt;&gt;(false, &quot;未注册&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">        try &#123;</span><br><span class="line">            // 存储过程调用</span><br><span class="line">            SeckillExecution execution = seckillService.executeSeckill(seckillId, phone, md5);</span><br><span class="line">            return new SeckillResult&lt;SeckillExecution&gt;(true, execution);</span><br><span class="line">        &#125; catch (RepatKillException e) &#123;</span><br><span class="line">            SeckillExecution execution = new SeckillExecution(seckillId, SeckillStatEnum.REPEAT_KILL);</span><br><span class="line">            return new SeckillResult&lt;SeckillExecution&gt;(true, execution);</span><br><span class="line">        &#125; catch (SeckillClosedException e) &#123;</span><br><span class="line">            SeckillExecution execution = new SeckillExecution(seckillId, SeckillStatEnum.END);</span><br><span class="line">            return new SeckillResult&lt;SeckillExecution&gt;(true, execution);</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            logger.error(e.getMessage(), e);</span><br><span class="line">            SeckillExecution execution = new SeckillExecution(seckillId, SeckillStatEnum.INNER_ERROR);</span><br><span class="line">            return new SeckillResult&lt;SeckillExecution&gt;(true, execution);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @RequestMapping(value = &quot;/time/now&quot;, method = RequestMethod.GET)</span><br><span class="line">    @ResponseBody</span><br><span class="line">    public SeckillResult&lt;Long&gt; time() &#123;</span><br><span class="line">        Date now = new Date();</span><br><span class="line">        return new SeckillResult&lt;Long&gt;(true, now.getTime());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="一些插件的CDN"><a href="#一些插件的CDN" class="headerlink" title="一些插件的CDN"></a>一些插件的CDN</h2><p><a href="http://www.bootcdn.cn/" target="_blank" rel="noopener">CDN查询地址</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">jquery-cookie</span><br><span class="line"></span><br><span class="line">https://cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.js</span><br><span class="line"></span><br><span class="line">jquery-countdown</span><br><span class="line"></span><br><span class="line">https://cdn.bootcss.com/jquery-countdown/2.0.2/jquery.countdown-ar.js</span><br></pre></td></tr></table></figure></p>
+<p><strong>切记</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">必须使用这种方法书写</span><br><span class="line">&lt;script src=&quot;xxx&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;</span><br><span class="line">如果采用下面的写法,浏览器不会加载资源</span><br><span class="line">&lt;script src=&quot;xxx&quot; type=&quot;text/javascript&quot;/&gt;</span><br></pre></td></tr></table></figure></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p> Bootstrap和JS在github地址有.我才开始用,需要了解一部分.感觉逻辑什么的还挺好用的.</p>
+<p> DTO传输数据</p>
+<p> 注解映射驱动</p>
+
+    </article>
+    <!-- 前后页  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2018/01/02/秒杀高并发优化/" title= 秒杀高并发优化 >
+                    <div class="nextTitle">秒杀高并发优化</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2018/01/02/秒杀service层开发/" title= 秒杀Service层开发 >
+                    <div class="prevTitle">秒杀Service层开发</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid= MTAyMC8zNDE4Ni8xMDcyMw==>
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!--PC版-->
+
+    <!--PC版-->
+
+
+    
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:15733207536@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/lovemoganna" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title=wechat>
+                  
+                  <img class="profile-qr" src="/assets/wechat.jpg" />
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/luoyupiaoshang" class="iconfont-archer twitter" target="_blank" title=twitter></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://luoyupiaoshang.club/" target="_blank">luoyupiaoshang</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+        <span id="busuanzi_container_site_pv">访问总计 <span id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+    
+</footer>
+
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#主要内容"><span class="toc-number">1.</span> <span class="toc-text">主要内容</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#前端交互设计"><span class="toc-number">2.</span> <span class="toc-text">前端交互设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Restful接口设计"><span class="toc-number">3.</span> <span class="toc-text">Restful接口设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#什么是Restful"><span class="toc-number">3.1.</span> <span class="toc-text">什么是Restful</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Rest架构的风格"><span class="toc-number">3.2.</span> <span class="toc-text">Rest架构的风格</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Restful的示例"><span class="toc-number">3.3.</span> <span class="toc-text">Restful的示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Restful规范"><span class="toc-number">3.4.</span> <span class="toc-text">Restful规范</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#springmvc中实现Restful服务"><span class="toc-number">3.5.</span> <span class="toc-text">springmvc中实现Restful服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#url的设计"><span class="toc-number">3.6.</span> <span class="toc-text">url的设计</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SpringMVC的运行流程"><span class="toc-number">4.</span> <span class="toc-text">SpringMVC的运行流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#我们始终围绕着Handler开发-如下"><span class="toc-number">4.1.</span> <span class="toc-text">我们始终围绕着Handler开发,如下:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SpringMVC的运行流程-1"><span class="toc-number">4.2.</span> <span class="toc-text">SpringMVC的运行流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Http处理地址映射原理"><span class="toc-number">4.3.</span> <span class="toc-text">Http处理地址映射原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#注解映射示例"><span class="toc-number">4.4.</span> <span class="toc-text">注解映射示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#请求方法细节的处理"><span class="toc-number">5.</span> <span class="toc-text">请求方法细节的处理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#参数绑定的示例"><span class="toc-number">5.1.</span> <span class="toc-text">参数绑定的示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#返回json数据的示例"><span class="toc-number">5.2.</span> <span class="toc-text">返回json数据的示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Cookie访问的示例"><span class="toc-number">5.3.</span> <span class="toc-text">Cookie访问的示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#web-xml的配置"><span class="toc-number">5.4.</span> <span class="toc-text">web.xml的配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#spring-web-xml的配置"><span class="toc-number">5.5.</span> <span class="toc-text">spring-web.xml的配置</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#书写秒杀的Controller"><span class="toc-number">6.</span> <span class="toc-text">书写秒杀的Controller</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#一些插件的CDN"><span class="toc-number">7.</span> <span class="toc-text">一些插件的CDN</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">8.</span> <span class="toc-text">总结</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">归档</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">标签</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">分类</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-archive"> Total : 25 </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/03</span><a class="archive-post-title" href= "/2018/04/03/interview/" >李刚_产品经理实习生</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/28</span><a class="archive-post-title" href= "/2018/02/28/mysql设计以及架构优化/" >mysql设计以及架构优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/25</span><a class="archive-post-title" href= "/2018/02/25/Redis集群的搭建/" >Redis-cluster搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/redis/" >Redis基本操作</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/spring和redis整合/" >Spring与Redis整合</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/Redis集群接口/" >Redis接口的编写</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/22</span><a class="archive-post-title" href= "/2018/02/22/DB02-数据库字段设计规范/" >DB02-数据库字段设计规范</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span><a class="archive-post-title" href= "/2018/02/01/mysql日志划分/" >mysql服务器日志</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/27</span><a class="archive-post-title" href= "/2018/01/27/选择常规查询和慢速查询日志的输出目的地/" >选择常规查询和慢速查询日志的输出目的地</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span><a class="archive-post-title" href= "/2018/01/25/集群环境中解决Session共享问题/" >集群环境中解决Session共享问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/24</span><a class="archive-post-title" href= "/2018/01/24/ajax跨域问题/" >ajax跨域问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/09</span><a class="archive-post-title" href= "/2018/01/09/WebCrawler/" >WebCrawler-网络爬虫01</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/08</span><a class="archive-post-title" href= "/2018/01/08/区块链/" >区块链(Blockchain)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀Web层开发/" >秒杀web层开发</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀service层开发/" >秒杀Service层开发</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀高并发优化/" >秒杀高并发优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/Markdown/" >markdown语法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/秒杀概述/" >秒杀概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/数据库的基本操作/" >数据库的基本操作</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/秒杀Dao层开发/" >秒杀Dao层开发</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2017 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/apringData-01/" >springData-01</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/SpringData-02/" >springData-02</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/SpringData-03/" >springData-03</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href= "/2017/11/09/springboot/" >SpringBoot初识</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href= "/2017/11/09/Spring事务/" >Spring事务</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="mysql设计"><span class="iconfont-archer">&#xe606;</span>mysql设计</span>
+    
+        <span class="sidebar-tag-name" data-tags="springdata"><span class="iconfont-archer">&#xe606;</span>springdata</span>
+    
+        <span class="sidebar-tag-name" data-tags="Redis"><span class="iconfont-archer">&#xe606;</span>Redis</span>
+    
+        <span class="sidebar-tag-name" data-tags="Redis-cluster"><span class="iconfont-archer">&#xe606;</span>Redis-cluster</span>
+    
+        <span class="sidebar-tag-name" data-tags="markdown"><span class="iconfont-archer">&#xe606;</span>markdown</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="Transaction"><span class="iconfont-archer">&#xe606;</span>Transaction</span>
+    
+        <span class="sidebar-tag-name" data-tags="爬虫的原理"><span class="iconfont-archer">&#xe606;</span>爬虫的原理</span>
+    
+        <span class="sidebar-tag-name" data-tags="爬虫架构"><span class="iconfont-archer">&#xe606;</span>爬虫架构</span>
+    
+        <span class="sidebar-tag-name" data-tags="Session共享"><span class="iconfont-archer">&#xe606;</span>Session共享</span>
+    
+        <span class="sidebar-tag-name" data-tags="个人简历"><span class="iconfont-archer">&#xe606;</span>个人简历</span>
+    
+        <span class="sidebar-tag-name" data-tags="实习生"><span class="iconfont-archer">&#xe606;</span>实习生</span>
+    
+        <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
+    
+        <span class="sidebar-tag-name" data-tags="ServiceLog"><span class="iconfont-archer">&#xe606;</span>ServiceLog</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构优化"><span class="iconfont-archer">&#xe606;</span>架构优化</span>
+    
+        <span class="sidebar-tag-name" data-tags="FT中文网"><span class="iconfont-archer">&#xe606;</span>FT中文网</span>
+    
+        <span class="sidebar-tag-name" data-tags="区块链"><span class="iconfont-archer">&#xe606;</span>区块链</span>
+    
+        <span class="sidebar-tag-name" data-tags="SSM"><span class="iconfont-archer">&#xe606;</span>SSM</span>
+    
+        <span class="sidebar-tag-name" data-tags="Web"><span class="iconfont-archer">&#xe606;</span>Web</span>
+    
+        <span class="sidebar-tag-name" data-tags="Bootstrap"><span class="iconfont-archer">&#xe606;</span>Bootstrap</span>
+    
+        <span class="sidebar-tag-name" data-tags="Service"><span class="iconfont-archer">&#xe606;</span>Service</span>
+    
+        <span class="sidebar-tag-name" data-tags="增删改查"><span class="iconfont-archer">&#xe606;</span>增删改查</span>
+    
+        <span class="sidebar-tag-name" data-tags="RowsLock"><span class="iconfont-archer">&#xe606;</span>RowsLock</span>
+    
+        <span class="sidebar-tag-name" data-tags="高并发"><span class="iconfont-archer">&#xe606;</span>高并发</span>
+    
+        <span class="sidebar-tag-name" data-tags="SpringBoot"><span class="iconfont-archer">&#xe606;</span>SpringBoot</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="mysql"><span class="iconfont-archer">&#xe60a;</span>mysql</span>
+    
+        <span class="sidebar-category-name" data-categories="spring"><span class="iconfont-archer">&#xe60a;</span>spring</span>
+    
+        <span class="sidebar-category-name" data-categories="Redis"><span class="iconfont-archer">&#xe60a;</span>Redis</span>
+    
+        <span class="sidebar-category-name" data-categories="Seckill"><span class="iconfont-archer">&#xe60a;</span>Seckill</span>
+    
+        <span class="sidebar-category-name" data-categories="SpringBoot"><span class="iconfont-archer">&#xe60a;</span>SpringBoot</span>
+    
+        <span class="sidebar-category-name" data-categories="区块链-Blockchain"><span class="iconfont-archer">&#xe60a;</span>区块链-Blockchain</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div>
+
+    <script>
+    var siteMeta = {
+        root: '/',
+        author: 'LiGang'
+    }
+</script>
+    <!-- busuanzi  -->
+    
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+    
+    </body>
+</html>
+
+

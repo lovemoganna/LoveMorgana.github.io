@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html>
+    <!-- title -->
+
+
+
+
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
+    <title>mysql设计以及架构优化 · LoveMorgana&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+        box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s 1;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= /css/style.css?v=20180317 as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" type="text/css" href= /css/mobile.css?v=20180317 media="(max-width: 980px)"/>
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        
+    <link rel="icon" href= /assets/favicon.ico>
+    <script>
+        (function (w) {
+            "use strict";
+            // rel=preload support test
+            if (!w.loadCSS) {
+                w.loadCSS = function () { };
+            }
+            // define on the loadCSS obj
+            var rp = loadCSS.relpreload = {};
+            // rel=preload feature support test
+            // runs once and returns a function for compat purposes
+            rp.support = (function () {
+                var ret;
+                try {
+                    ret = w.document.createElement("link").relList.supports("preload");
+                } catch (e) {
+                    ret = false;
+                }
+                return function () {
+                    return ret;
+                };
+            })();
+
+            // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+            // then change that media back to its intended value on load
+            rp.bindMediaToggle = function (link) {
+                // remember existing media attr for ultimate state, or default to 'all'
+                var finalMedia = link.media || "all";
+
+                function enableStylesheet() {
+                    link.media = finalMedia;
+                }
+
+                // bind load handlers to enable media
+                if (link.addEventListener) {
+                    link.addEventListener("load", enableStylesheet);
+                } else if (link.attachEvent) {
+                    link.attachEvent("onload", enableStylesheet);
+                }
+
+                // Set rel and non-applicable media type to start an async request
+                // note: timeout allows this to happen async to let rendering continue in IE
+                setTimeout(function () {
+                    link.rel = "stylesheet";
+                    link.media = "only x";
+                });
+                // also enable media after 3 seconds,
+                // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+                setTimeout(enableStylesheet, 3000);
+            };
+
+            // loop through link elements in DOM
+            rp.poly = function () {
+                // double check this to prevent external calls from running
+                if (rp.support()) {
+                    return;
+                }
+                var links = w.document.getElementsByTagName("link");
+                for (var i = 0; i < links.length; i++) {
+                    var link = links[i];
+                    // qualify links to those with rel=preload and as=style attrs
+                    if (link.rel === "preload" && link.getAttribute("as") === "style" && !link.getAttribute("data-loadcss")) {
+                        // prevent rerunning on link
+                        link.setAttribute("data-loadcss", true);
+                        // bind listeners to toggle media back
+                        rp.bindMediaToggle(link);
+                    }
+                }
+            };
+
+            // if unsupported, run the polyfill
+            if (!rp.support()) {
+                // run once at least
+                rp.poly();
+
+                // rerun poly on an interval until onload
+                var run = w.setInterval(rp.poly, 500);
+                if (w.addEventListener) {
+                    w.addEventListener("load", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                } else if (w.attachEvent) {
+                    w.attachEvent("onload", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                }
+            }
+            // commonjs
+            if (typeof exports !== "undefined") {
+                exports.loadCSS = loadCSS;
+            }
+            else {
+                w.loadCSS = loadCSS;
+            }
+        }(typeof global !== "undefined" ? global : this));
+    </script>
+    <script src="//cdn.staticfile.org/jquery/3.2.1/jquery.min.js" defer></script>
+    <script src="/scripts/main.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+    <script>
+        (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+        (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date(); a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+        ga('create', 'UA-113782861-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >LoveMorgana&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">mysql设计以及架构优化</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>LoveMorgana's Blog</a>
+</header>
+
+    <div class="wrapper">
+        <div class="site-intro" style=
+
+
+
+
+
+
+
+
+height:50vh;
+
+>
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            mysql设计以及架构优化
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <!-- 文章页标签  -->
+            
+                <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "mysql设计">mysql设计</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "架构优化">架构优化</a>
+    
+</div>
+            
+            <div class="post-intro-meta">
+                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                <span class="post-intro-time">2018/02/28</span>
+                
+                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                    <span class="iconfont-archer">&#xe602;</span>
+                    <span id="busuanzi_value_page_pv"></span>
+                </span>
+                
+                <span class="shareWrapper">
+                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                    <span class="shareText">Share</span>
+                    <ul class="shareList">
+                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                            <div class="share-qrcode"></div>
+                        </li>
+                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                    </ul>
+                </span>
+            </div>
+        
+    </div>
+</div>
+        <script>
+  // load webfont-loader async, and add callback function
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+  
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntroTags = document.getElementsByClassName('post-intro-tags')[0],
+        postIntroMeat = document.getElementsByClassName('post-intro-meta')[0];
+      if (postIntroTags) {
+        postIntroTags.classList.add('post-fade-in');
+      }
+      if (postIntroMeat) {
+        postIntroMeat.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  async("https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", asyncCb)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="电商常用功能模块的数据库设计"><a href="#电商常用功能模块的数据库设计" class="headerlink" title="电商常用功能模块的数据库设计"></a>电商常用功能模块的数据库设计</h2><p>模块的划分:</p>
+<p>注册会员–展示商品–加入购物车–生成订单</p>
+<h2 id="使用的工具和需要掌握的内容"><a href="#使用的工具和需要掌握的内容" class="headerlink" title="使用的工具和需要掌握的内容"></a>使用的工具和需要掌握的内容</h2><ol>
+<li><p>使用MySQL5.7版本.</p>
+</li>
+<li><p>Mysql的图形客户端程序,Mysqlworkbench.</p>
+</li>
+<li><p>Linux下命令和Shell脚本的基础知识.</p>
+</li>
+</ol>
+<h2 id="项目说明"><a href="#项目说明" class="headerlink" title="项目说明"></a>项目说明</h2><p>常见的购物流程:</p>
+<figure class="highlight brainfuck"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">用户登录</span><span class="literal">-</span><span class="literal">-</span><span class="literal">-</span><span class="comment">选购商品</span><span class="literal">-</span><span class="literal">-</span><span class="comment">加购物车</span><span class="literal">-</span><span class="literal">-</span><span class="comment">检查库存</span><span class="literal">-</span><span class="literal">-</span><span class="comment">提交订单</span>            <span class="comment">YES</span></span><br><span class="line"><span class="comment"></span>                                            <span class="literal">-</span><span class="literal">-</span>  <span class="comment">在线支付</span>  <span class="literal">-</span><span class="literal">-</span><span class="literal">-</span><span class="literal">-</span>  <span class="comment">订单付款</span></span><br><span class="line"><span class="comment"></span>                                                          <span class="comment">YES</span></span><br><span class="line"><span class="comment"></span>                                            <span class="literal">-</span><span class="literal">-</span>  <span class="comment">货到付款</span>  <span class="literal">-</span><span class="literal">-</span><span class="literal">-</span><span class="literal">-</span>  <span class="comment">订单付款</span></span><br></pre></td></tr></table></figure>
+<p>需要以下几个模块的设计</p>
+<figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">用户模块: 完成用户注册和登录验证.</span><br><span class="line"></span><br><span class="line">商品模块: 前后台商品管理和浏览.</span><br><span class="line"></span><br><span class="line">订单模块: 订单及购物车的生成和管理.</span><br><span class="line"></span><br><span class="line">仓配模块: 仓库库存和物流管理功能.</span><br></pre></td></tr></table></figure>
+<h2 id="数据库设计规范"><a href="#数据库设计规范" class="headerlink" title="数据库设计规范"></a>数据库设计规范</h2><p>1.数据库结构设计</p>
+<p>逻辑设计 —&gt; 物理设计</p>
+<p>2.实际工作中</p>
+<p>逻辑设计 + 物理设计</p>
+<p>3.物理设计<br>一般就是<code>表名</code>,<code>字段名</code>,<code>字段类型</code>的设计.</p>
+<p><strong>数据库规范概述</strong><br><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">1. </span>数据库命名规范</span><br><span class="line"><span class="bullet">2. </span>数据库基本设计规范</span><br><span class="line"><span class="bullet">3. </span>数据库索引命名和优化</span><br><span class="line"><span class="bullet">4. </span>数据库字段设计规范</span><br><span class="line"><span class="bullet">5. </span>数据库SQL开发规范</span><br><span class="line"><span class="bullet">6. </span>数据库操作行为规范</span><br></pre></td></tr></table></figure></p>
+<h3 id="数据库命名规范"><a href="#数据库命名规范" class="headerlink" title="数据库命名规范"></a>数据库命名规范</h3><h4 id="所有数据库对象名称必须使用小写字母并用下划线分割"><a href="#所有数据库对象名称必须使用小写字母并用下划线分割" class="headerlink" title="所有数据库对象名称必须使用小写字母并用下划线分割."></a>所有数据库对象名称必须使用小写字母并用下划线分割.</h4><p>原因就是Mysql数据库对大小写敏感.</p>
+<p>不同的数据库名    eg: DBName  dbname</p>
+<p>不同的表名        eg :Table   table     tabLe</p>
+<h4 id="所有数据库对象名称禁止使用Mysql保留关键字"><a href="#所有数据库对象名称禁止使用Mysql保留关键字" class="headerlink" title="所有数据库对象名称禁止使用Mysql保留关键字"></a>所有数据库对象名称禁止使用Mysql保留关键字</h4><p>比如说你给列名起了个名字叫<code>form</code></p>
+<p>那么查询的时候就可能出现<code>select id,username,from,age from tb_user;</code>这种情况.</p>
+<p>执行SQL的时候,mysql不清楚这2个form有什么区别.</p>
+<p>要非解决这种问题哪,就用`from``来区分关键字.</p>
+<h4 id="数据库对象的命名要能做到见名识义-并且不能超过32个字符"><a href="#数据库对象的命名要能做到见名识义-并且不能超过32个字符" class="headerlink" title="数据库对象的命名要能做到见名识义,并且不能超过32个字符"></a>数据库对象的命名要能做到见名识义,并且不能超过32个字符</h4><p>eg: 数据库命名示例: mc_userdb</p>
+<p>eg: 用户账号表: user_count</p>
+<p><strong>一般的临时表的命名规范:</strong></p>
+<p>像导入导出数据表,临时统计所使用的表,用完马上清理掉,最好.</p>
+<p>但是大部分情况下都不允许,所以我们<code>建立临时表时,必须要以tmp为前缀并以日期为后缀.</code></p>
+<p>eg : tmp_export_data_2018_01_28</p>
+<p><strong>备份表</strong></p>
+<p>备份表必须以bak为前缀并以日期为后缀.</p>
+<p>eg : bak_copy_data_2018_01_28</p>
+<p><strong>所有存储相同数据的列名和列类型必须一致</strong></p>
+<p>观察下面的的示例.</p>
+<p><strong>用户信息表</strong><br><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> customer_inf(</span><br><span class="line">  customer_inf_id <span class="built_in">int</span> <span class="keyword">unsigned</span> auto_increment primary <span class="keyword">key</span> <span class="keyword">not</span> <span class="literal">null</span> <span class="keyword">comment</span> <span class="string">'自增'</span>,</span><br><span class="line">  customer_id <span class="built_in">int</span> <span class="keyword">unsigned</span> <span class="keyword">not</span> <span class="literal">null</span> <span class="keyword">comment</span> <span class="string">'customer login 表的自增'</span>,</span><br><span class="line">  customer_name <span class="built_in">varchar</span>(<span class="number">20</span>) <span class="keyword">not</span> <span class="literal">null</span> <span class="keyword">comment</span> <span class="string">'用户真实姓名'</span>,</span><br><span class="line">  identity_card_type tinyint <span class="keyword">not</span> <span class="literal">null</span> <span class="keyword">default</span> <span class="number">1</span> <span class="keyword">comment</span> <span class="string">'证件类型: 1 身份证, 2 微信网证'</span>,</span><br><span class="line">  identify_card_no <span class="built_in">varchar</span>(<span class="number">20</span>) <span class="keyword">comment</span> <span class="string">'证件号码'</span></span><br><span class="line">  );</span><br></pre></td></tr></table></figure></p>
+<p><strong>订单表</strong><br><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> order_master(</span><br><span class="line">  order_id <span class="built_in">int</span> <span class="keyword">unsigned</span> <span class="keyword">not</span> <span class="literal">null</span> auto_increment primary <span class="keyword">key</span> <span class="keyword">comment</span> <span class="string">'订单ID'</span>,</span><br><span class="line">  order_sn <span class="built_in">bigint</span> <span class="keyword">unsigned</span> <span class="keyword">not</span> <span class="literal">null</span> <span class="keyword">comment</span> <span class="string">'订单编号 yyyymmddnnnnnnn'</span>,</span><br><span class="line">  customer_id <span class="built_in">int</span> <span class="keyword">unsigned</span> <span class="keyword">not</span> <span class="literal">null</span> <span class="keyword">comment</span> <span class="string">'下单人ID'</span>,</span><br><span class="line">  shipping_user <span class="built_in">varchar</span>(<span class="number">10</span>) <span class="keyword">not</span> <span class="literal">null</span> <span class="keyword">comment</span> <span class="string">'收货人姓名'</span>,</span><br><span class="line">  province <span class="built_in">SMALLINT</span> <span class="keyword">not</span> <span class="literal">null</span> <span class="keyword">comment</span> <span class="string">'收获人所在省'</span></span><br><span class="line">  );</span><br></pre></td></tr></table></figure></p>
+<p>我们可以观察到用户信息表中的<code>customer_id</code>字段和订单表中<code>customer_id</code>字段类型和大小相同:都是无符号的int类型.</p>
+<p>这对于数据库的查询性能是非常重要的.一般都是关联列,对于查询的效率很有影响.</p>
+<h2 id="数据库命名规范总结"><a href="#数据库命名规范总结" class="headerlink" title="数据库命名规范总结"></a>数据库命名规范总结</h2><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">1. </span>所有数据库对象名称必须小写.</span><br><span class="line"><span class="bullet">2. </span>命名要见名识意,禁止使用Mysql的保留关键字.</span><br><span class="line"><span class="bullet">3. </span>临时表要以tmp<span class="emphasis">_开头,备份表以bak_</span>开头,并且以时间戳结尾.</span><br><span class="line"><span class="bullet">4. </span>所有存储相同数据的列名和列类型必须保持一致.</span><br></pre></td></tr></table></figure>
+<h2 id="数据库基本设计规范"><a href="#数据库基本设计规范" class="headerlink" title="数据库基本设计规范"></a>数据库基本设计规范</h2><p>现在可能还存在着Mysql5.5使用之前MyISAM(默认存储引擎)情况.</p>
+<p>如今的Mysql5.7没有其他需求的话,默认是是使用<code>Innodb存储引擎</code>.</p>
+<h3 id="所有的表都要使用Innodb存储引擎"><a href="#所有的表都要使用Innodb存储引擎" class="headerlink" title="所有的表都要使用Innodb存储引擎"></a>所有的表都要使用Innodb存储引擎</h3><p>原因就是Innodb存储引擎支持事务,行级锁,更好的恢复性,高并发下性能更好.与Oracle很相似.</p>
+<p>MyISAM在高并发的情况下,锁表是一种很常见的性能问题.Innodb存存储引擎解决了很多问题.</p>
+<h3 id="数据库和表的字符集统一使用UTF-8"><a href="#数据库和表的字符集统一使用UTF-8" class="headerlink" title="数据库和表的字符集统一使用UTF-8"></a>数据库和表的字符集统一使用UTF-8</h3><p>如果之存储中文字符的话,用GBK/GB2312字符集都可以.</p>
+<p><strong>统一的字符集可以避免由于字符集准换成的乱码.</strong></p>
+<p>Mysql中的UTF8字符集汉字点3个字节,ASCII码占用1个字节.</p>
+<p>eg : 如果定义了varchar(255)的列使用UTF8存储中文字符,255个字符实际占用755个字节.</p>
+<h3 id="所有表和字段都要添加注释"><a href="#所有表和字段都要添加注释" class="headerlink" title="所有表和字段都要添加注释"></a>所有表和字段都要添加注释</h3><p>使用comment从句添加表这列的备注,这些我们基本都知道.</p>
+<p>目的: 从一开始就进行数据字典的维护.</p>
+<h3 id="尽量控制单表数据量的大小-建议控制在500万行以内"><a href="#尽量控制单表数据量的大小-建议控制在500万行以内" class="headerlink" title="尽量控制单表数据量的大小,建议控制在500万行以内"></a>尽量控制单表数据量的大小,建议控制在500万行以内</h3><p>但是500万行数据量并不是Mysql数据库的限制</p>
+<p><strong>Mysql存储数据量的大小,取决于存储设置和文件系统,Mysql并没有对其进行了限制.</strong></p>
+<p>比如所: 32位操作系统单个文件不能超过2个G.所以32位操作系统限制了Mysql数据库的存储容量大小.</p>
+<p>但是我们都使用64为的操作系统了,所以不必考虑存储容量的限制了.</p>
+<p><strong>可以使用历史数据归档,分库分表等手段来控制数据量大小.</strong></p>
+<p>这主要用在业务复杂的方面:比如订单表</p>
+<h3 id="谨慎的使用Mysql分区表"><a href="#谨慎的使用Mysql分区表" class="headerlink" title="谨慎的使用Mysql分区表"></a>谨慎的使用Mysql分区表</h3><p>分区表在物理上表现为多个文件,在逻辑上表现为一个表.</p>
+<p>谨慎选择分区主键,跨分区查询效率可能更低.</p>
+<p>建议采用物理分表的方式管理大数据.</p>
+<h3 id="尽量做到冷热数据分离-减少表的宽度"><a href="#尽量做到冷热数据分离-减少表的宽度" class="headerlink" title="尽量做到冷热数据分离,减少表的宽度"></a>尽量做到冷热数据分离,减少表的宽度</h3><p>除了注意表中的行,我们还要注意表中的宽度,Mysql对表中的数据行没有限制,但是一个表中所能包含的列却有限制.</p>
+<p>Mysql限制一个表中最多存放4096列,并且每一行的大小不能超过65535个字节.</p>
+<p><strong>减少磁盘IO,保证热数据的内存缓存命中率</strong></p>
+<p><strong>利用更有效的利用缓存,避免读入无用的冷数据</strong></p>
+<p><strong>为了保证表的宽度,要使用垂直拆分:经常一起使用的列放到一个表中,可以避免过多的冗关联操作,从另一方面可以提高查询的性能</strong></p>
+<h3 id="禁止在表中建立预留字段"><a href="#禁止在表中建立预留字段" class="headerlink" title="禁止在表中建立预留字段"></a>禁止在表中建立预留字段</h3><p>一般是采用varchar类型,但是这种类型占用空间比较大.</p>
+<p>预留字段的命名很难做到见名识义</p>
+<p>预留字段无法确认存储的数据类型,所以无法选择合适的类型.</p>
+<p>对预留字段类型的修改,会对表进行锁定.</p>
+<h3 id="禁止在数据库中存储图片-文件等二进制数据"><a href="#禁止在数据库中存储图片-文件等二进制数据" class="headerlink" title="禁止在数据库中存储图片,文件等二进制数据"></a>禁止在数据库中存储图片,文件等二进制数据</h3><p>之前搭建了FastDFS服务器.可以解决这个问题.</p>
+<h3 id="禁止在线上做数据库压力测试"><a href="#禁止在线上做数据库压力测试" class="headerlink" title="禁止在线上做数据库压力测试"></a>禁止在线上做数据库压力测试</h3><p>要在专门的测试环境下测试.如果业务环境没上线,就不要再管理测试了.</p>
+<h3 id="禁止从开发环境-测试环境直接连接生产环境数据库"><a href="#禁止从开发环境-测试环境直接连接生产环境数据库" class="headerlink" title="禁止从开发环境,测试环境直接连接生产环境数据库"></a>禁止从开发环境,测试环境直接连接生产环境数据库</h3><h2 id="数据库基本设计规范总结"><a href="#数据库基本设计规范总结" class="headerlink" title="数据库基本设计规范总结"></a>数据库基本设计规范总结</h2><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">1. </span>所有表必须使用Innodb存储引擎.</span><br><span class="line"><span class="bullet">2. </span>所有表及字段都要有备注信息,并使用UTF8字符集.</span><br><span class="line"><span class="bullet">3. </span>要尽量做到控制单表大小,并把冷热数据分离.</span><br><span class="line"><span class="bullet">4. </span>禁止使用预留字段及在表中存储大的二进制数据.</span><br></pre></td></tr></table></figure>
+<h2 id="数据库索引规范"><a href="#数据库索引规范" class="headerlink" title="数据库索引规范"></a>数据库索引规范</h2><p>索引对数据库的查询性能来说是非常重要的.</p>
+<h3 id="不要滥用索引"><a href="#不要滥用索引" class="headerlink" title="不要滥用索引"></a>不要滥用索引</h3><p>限制每张表上的索引数量,单张表索引不超过5个.</p>
+<p>索引并不是越多越好!索引可以提高效率同样也可以降低效率.</p>
+<p>原因是索引可以提高查询的效率,但同样也会降低插入和更新的效率.</p>
+<p><strong>禁止给表中的每一列都建立单独的索引.</strong></p>
+<p>Innodb是一种索引组织表.所谓的索引组织表就是,数据存储的逻辑顺序和索引的顺序是相同的.表的存储顺序只能有一种.</p>
+<p><strong>Innodb是按照主键索引来组织表的.</strong></p>
+<p>固定的要求就是,<strong>每个innodb表必须有一个主键.</strong></p>
+<p>如果你没建立.Mysql就会选择第一个非空唯一索引作为主键.</p>
+<p>如果没有非空唯一索引,Mysql就会自动生成一个占6个字节的主键.但性能不好.</p>
+<p>表中主键的选择:<strong>不能使用更新频繁的列作为主键,不使用多列主键.</strong></p>
+<p>多列主键指的是<code>联合索引</code>作为主键.</p>
+<p>Innodb是索引组织表,如果使用上面的2个索引作为主键,不断频繁的改变顺序,不但会使服务器IO增加,同时会占用大量的CPU资源.</p>
+<p><strong>不要使用UUID,MD5,哈希,这种字符串数组的数据来作为主键.</strong></p>
+<p>这类数据无法保证数据的顺序更改.</p>
+<p>拿UUID来说,我们无法保证下面插入的UUID的值是否大于前面的值,要是后插入的UUID的值比前面的小.</p>
+<p>那么Innodb为了保证表的顺序性,要把这个小的UUID的值插入到前面.</p>
+<p>这样就会造成大于这个新值的数据往后移动,这样就会造成大量的IO操作,还会占用大量的CPU资源.降低整体服务器的类型.</p>
+<p><strong>最好选中顺序自动增长的ID值,也就是数据库为我们提供的auto_increment 这种自增ID作为主键</strong></p>
+<h3 id="在哪些上建立索引"><a href="#在哪些上建立索引" class="headerlink" title="在哪些上建立索引?"></a>在哪些上建立索引?</h3><figure class="highlight n1ql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1. 一般在<span class="keyword">SELECT</span>,<span class="keyword">UPDATE</span>,<span class="keyword">DELETE</span>语句的<span class="keyword">WHERE</span>从句的列建立索引.</span><br><span class="line"><span class="number">2.</span> 包含在<span class="keyword">ORDER</span> <span class="keyword">BY</span>,<span class="keyword">GROUP</span> <span class="keyword">BY</span>,<span class="keyword">DISTINCT</span>中的字段建立索引.</span><br><span class="line"><span class="number">3.</span> 通常情况下,我们会选择建立联合索引,因为这样性能会更好.</span><br><span class="line"><span class="number">4.</span> 多表<span class="keyword">JOIN</span>的关联列上建立索引.</span><br><span class="line"></span><br><span class="line">如果<span class="keyword">Join</span>的关联列上没有索引,在进行During操作的时候,性能会很差.</span><br></pre></td></tr></table></figure>
+<h3 id="建立索引目的"><a href="#建立索引目的" class="headerlink" title="建立索引目的"></a>建立索引目的</h3><p>我们希望查询时通过索引来进行数据查找,从而减少磁盘的随机IO.增加查询的性能.所以我们的索引可以过滤出越少的数据,则我们需要从磁盘读入的数据越少.</p>
+<h3 id="如何选择索引列的顺序"><a href="#如何选择索引列的顺序" class="headerlink" title="如何选择索引列的顺序?"></a>如何选择索引列的顺序?</h3><p>我们是从左到右的顺序来使用的.</p>
+<p><strong>我们要把区分度最高的列放在联合索引的最左侧.</strong></p>
+<p><strong>尽量把字段长度小的列放在联合索引的最左侧.</strong></p>
+<p><strong>使用最频繁的列放在联合索引的左侧,</strong></p>
+<h3 id="避免建立冗余索引和重复索引"><a href="#避免建立冗余索引和重复索引" class="headerlink" title="避免建立冗余索引和重复索引"></a>避免建立冗余索引和重复索引</h3><p>1.重复索引: 索引列完全重复.</p>
+<p>eg: primary key(id) index(id)  unique index(id)</p>
+<p>我们一旦指定了id作为主键,就相当于在id列上建立了一个非空的唯一索引.</p>
+<p><strong>Mysql中的主键就是一个非空的唯一索引.</strong></p>
+<p>2.冗余索引: 部分索引列是冗余的.</p>
+<p>eg: index(a,b,c) index(a,b) index(a)</p>
+<p>列存储</p>
+<p>存储空间数据</p>
+<p>create table user (id int unsigned auto_increment primary key,name varchar(32) not null,age int(2) not null,f varchar(32) not null);</p>
+
+    </article>
+    <!-- 前后页  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2018/04/03/interview/" title= 李刚_产品经理实习生 >
+                    <div class="nextTitle">李刚_产品经理实习生</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2018/02/25/Redis集群的搭建/" title= Redis-cluster搭建 >
+                    <div class="prevTitle">Redis-cluster搭建</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid= MTAyMC8zNDE4Ni8xMDcyMw==>
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!--PC版-->
+
+    <!--PC版-->
+
+
+    
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:15733207536@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/lovemoganna" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title=wechat>
+                  
+                  <img class="profile-qr" src="/assets/wechat.jpg" />
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/luoyupiaoshang" class="iconfont-archer twitter" target="_blank" title=twitter></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://luoyupiaoshang.club/" target="_blank">luoyupiaoshang</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+        <span id="busuanzi_container_site_pv">访问总计 <span id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+    
+</footer>
+
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#电商常用功能模块的数据库设计"><span class="toc-number">1.</span> <span class="toc-text">电商常用功能模块的数据库设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用的工具和需要掌握的内容"><span class="toc-number">2.</span> <span class="toc-text">使用的工具和需要掌握的内容</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#项目说明"><span class="toc-number">3.</span> <span class="toc-text">项目说明</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#数据库设计规范"><span class="toc-number">4.</span> <span class="toc-text">数据库设计规范</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#数据库命名规范"><span class="toc-number">4.1.</span> <span class="toc-text">数据库命名规范</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#所有数据库对象名称必须使用小写字母并用下划线分割"><span class="toc-number">4.1.1.</span> <span class="toc-text">所有数据库对象名称必须使用小写字母并用下划线分割.</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#所有数据库对象名称禁止使用Mysql保留关键字"><span class="toc-number">4.1.2.</span> <span class="toc-text">所有数据库对象名称禁止使用Mysql保留关键字</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#数据库对象的命名要能做到见名识义-并且不能超过32个字符"><span class="toc-number">4.1.3.</span> <span class="toc-text">数据库对象的命名要能做到见名识义,并且不能超过32个字符</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#数据库命名规范总结"><span class="toc-number">5.</span> <span class="toc-text">数据库命名规范总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#数据库基本设计规范"><span class="toc-number">6.</span> <span class="toc-text">数据库基本设计规范</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#所有的表都要使用Innodb存储引擎"><span class="toc-number">6.1.</span> <span class="toc-text">所有的表都要使用Innodb存储引擎</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#数据库和表的字符集统一使用UTF-8"><span class="toc-number">6.2.</span> <span class="toc-text">数据库和表的字符集统一使用UTF-8</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#所有表和字段都要添加注释"><span class="toc-number">6.3.</span> <span class="toc-text">所有表和字段都要添加注释</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#尽量控制单表数据量的大小-建议控制在500万行以内"><span class="toc-number">6.4.</span> <span class="toc-text">尽量控制单表数据量的大小,建议控制在500万行以内</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#谨慎的使用Mysql分区表"><span class="toc-number">6.5.</span> <span class="toc-text">谨慎的使用Mysql分区表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#尽量做到冷热数据分离-减少表的宽度"><span class="toc-number">6.6.</span> <span class="toc-text">尽量做到冷热数据分离,减少表的宽度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#禁止在表中建立预留字段"><span class="toc-number">6.7.</span> <span class="toc-text">禁止在表中建立预留字段</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#禁止在数据库中存储图片-文件等二进制数据"><span class="toc-number">6.8.</span> <span class="toc-text">禁止在数据库中存储图片,文件等二进制数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#禁止在线上做数据库压力测试"><span class="toc-number">6.9.</span> <span class="toc-text">禁止在线上做数据库压力测试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#禁止从开发环境-测试环境直接连接生产环境数据库"><span class="toc-number">6.10.</span> <span class="toc-text">禁止从开发环境,测试环境直接连接生产环境数据库</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#数据库基本设计规范总结"><span class="toc-number">7.</span> <span class="toc-text">数据库基本设计规范总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#数据库索引规范"><span class="toc-number">8.</span> <span class="toc-text">数据库索引规范</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#不要滥用索引"><span class="toc-number">8.1.</span> <span class="toc-text">不要滥用索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#在哪些上建立索引"><span class="toc-number">8.2.</span> <span class="toc-text">在哪些上建立索引?</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#建立索引目的"><span class="toc-number">8.3.</span> <span class="toc-text">建立索引目的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#如何选择索引列的顺序"><span class="toc-number">8.4.</span> <span class="toc-text">如何选择索引列的顺序?</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#避免建立冗余索引和重复索引"><span class="toc-number">8.5.</span> <span class="toc-text">避免建立冗余索引和重复索引</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">归档</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">标签</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">分类</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-archive"> Total : 25 </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/03</span><a class="archive-post-title" href= "/2018/04/03/interview/" >李刚_产品经理实习生</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/28</span><a class="archive-post-title" href= "/2018/02/28/mysql设计以及架构优化/" >mysql设计以及架构优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/25</span><a class="archive-post-title" href= "/2018/02/25/Redis集群的搭建/" >Redis-cluster搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/redis/" >Redis基本操作</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/spring和redis整合/" >Spring与Redis整合</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/Redis集群接口/" >Redis接口的编写</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/22</span><a class="archive-post-title" href= "/2018/02/22/DB02-数据库字段设计规范/" >DB02-数据库字段设计规范</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span><a class="archive-post-title" href= "/2018/02/01/mysql日志划分/" >mysql服务器日志</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/27</span><a class="archive-post-title" href= "/2018/01/27/选择常规查询和慢速查询日志的输出目的地/" >选择常规查询和慢速查询日志的输出目的地</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span><a class="archive-post-title" href= "/2018/01/25/集群环境中解决Session共享问题/" >集群环境中解决Session共享问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/24</span><a class="archive-post-title" href= "/2018/01/24/ajax跨域问题/" >ajax跨域问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/09</span><a class="archive-post-title" href= "/2018/01/09/WebCrawler/" >WebCrawler-网络爬虫01</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/08</span><a class="archive-post-title" href= "/2018/01/08/区块链/" >区块链(Blockchain)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀Web层开发/" >秒杀web层开发</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀service层开发/" >秒杀Service层开发</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀高并发优化/" >秒杀高并发优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/Markdown/" >markdown语法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/秒杀概述/" >秒杀概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/数据库的基本操作/" >数据库的基本操作</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/秒杀Dao层开发/" >秒杀Dao层开发</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2017 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/apringData-01/" >springData-01</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/SpringData-02/" >springData-02</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/SpringData-03/" >springData-03</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href= "/2017/11/09/springboot/" >SpringBoot初识</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href= "/2017/11/09/Spring事务/" >Spring事务</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="mysql设计"><span class="iconfont-archer">&#xe606;</span>mysql设计</span>
+    
+        <span class="sidebar-tag-name" data-tags="springdata"><span class="iconfont-archer">&#xe606;</span>springdata</span>
+    
+        <span class="sidebar-tag-name" data-tags="Redis"><span class="iconfont-archer">&#xe606;</span>Redis</span>
+    
+        <span class="sidebar-tag-name" data-tags="Redis-cluster"><span class="iconfont-archer">&#xe606;</span>Redis-cluster</span>
+    
+        <span class="sidebar-tag-name" data-tags="markdown"><span class="iconfont-archer">&#xe606;</span>markdown</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="Transaction"><span class="iconfont-archer">&#xe606;</span>Transaction</span>
+    
+        <span class="sidebar-tag-name" data-tags="爬虫的原理"><span class="iconfont-archer">&#xe606;</span>爬虫的原理</span>
+    
+        <span class="sidebar-tag-name" data-tags="爬虫架构"><span class="iconfont-archer">&#xe606;</span>爬虫架构</span>
+    
+        <span class="sidebar-tag-name" data-tags="Session共享"><span class="iconfont-archer">&#xe606;</span>Session共享</span>
+    
+        <span class="sidebar-tag-name" data-tags="个人简历"><span class="iconfont-archer">&#xe606;</span>个人简历</span>
+    
+        <span class="sidebar-tag-name" data-tags="实习生"><span class="iconfont-archer">&#xe606;</span>实习生</span>
+    
+        <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
+    
+        <span class="sidebar-tag-name" data-tags="ServiceLog"><span class="iconfont-archer">&#xe606;</span>ServiceLog</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构优化"><span class="iconfont-archer">&#xe606;</span>架构优化</span>
+    
+        <span class="sidebar-tag-name" data-tags="FT中文网"><span class="iconfont-archer">&#xe606;</span>FT中文网</span>
+    
+        <span class="sidebar-tag-name" data-tags="区块链"><span class="iconfont-archer">&#xe606;</span>区块链</span>
+    
+        <span class="sidebar-tag-name" data-tags="SSM"><span class="iconfont-archer">&#xe606;</span>SSM</span>
+    
+        <span class="sidebar-tag-name" data-tags="Web"><span class="iconfont-archer">&#xe606;</span>Web</span>
+    
+        <span class="sidebar-tag-name" data-tags="Bootstrap"><span class="iconfont-archer">&#xe606;</span>Bootstrap</span>
+    
+        <span class="sidebar-tag-name" data-tags="Service"><span class="iconfont-archer">&#xe606;</span>Service</span>
+    
+        <span class="sidebar-tag-name" data-tags="增删改查"><span class="iconfont-archer">&#xe606;</span>增删改查</span>
+    
+        <span class="sidebar-tag-name" data-tags="RowsLock"><span class="iconfont-archer">&#xe606;</span>RowsLock</span>
+    
+        <span class="sidebar-tag-name" data-tags="高并发"><span class="iconfont-archer">&#xe606;</span>高并发</span>
+    
+        <span class="sidebar-tag-name" data-tags="SpringBoot"><span class="iconfont-archer">&#xe606;</span>SpringBoot</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="mysql"><span class="iconfont-archer">&#xe60a;</span>mysql</span>
+    
+        <span class="sidebar-category-name" data-categories="spring"><span class="iconfont-archer">&#xe60a;</span>spring</span>
+    
+        <span class="sidebar-category-name" data-categories="Redis"><span class="iconfont-archer">&#xe60a;</span>Redis</span>
+    
+        <span class="sidebar-category-name" data-categories="Seckill"><span class="iconfont-archer">&#xe60a;</span>Seckill</span>
+    
+        <span class="sidebar-category-name" data-categories="SpringBoot"><span class="iconfont-archer">&#xe60a;</span>SpringBoot</span>
+    
+        <span class="sidebar-category-name" data-categories="区块链-Blockchain"><span class="iconfont-archer">&#xe60a;</span>区块链-Blockchain</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div>
+
+    <script>
+    var siteMeta = {
+        root: '/',
+        author: 'LiGang'
+    }
+</script>
+    <!-- busuanzi  -->
+    
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+    
+    </body>
+</html>
+
+

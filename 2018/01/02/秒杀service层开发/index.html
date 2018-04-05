@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html>
+    <!-- title -->
+
+
+
+
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
+    <title>秒杀Service层开发 · LoveMorgana&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+        box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s 1;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= /css/style.css?v=20180317 as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" type="text/css" href= /css/mobile.css?v=20180317 media="(max-width: 980px)"/>
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        
+    <link rel="icon" href= /assets/favicon.ico>
+    <script>
+        (function (w) {
+            "use strict";
+            // rel=preload support test
+            if (!w.loadCSS) {
+                w.loadCSS = function () { };
+            }
+            // define on the loadCSS obj
+            var rp = loadCSS.relpreload = {};
+            // rel=preload feature support test
+            // runs once and returns a function for compat purposes
+            rp.support = (function () {
+                var ret;
+                try {
+                    ret = w.document.createElement("link").relList.supports("preload");
+                } catch (e) {
+                    ret = false;
+                }
+                return function () {
+                    return ret;
+                };
+            })();
+
+            // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+            // then change that media back to its intended value on load
+            rp.bindMediaToggle = function (link) {
+                // remember existing media attr for ultimate state, or default to 'all'
+                var finalMedia = link.media || "all";
+
+                function enableStylesheet() {
+                    link.media = finalMedia;
+                }
+
+                // bind load handlers to enable media
+                if (link.addEventListener) {
+                    link.addEventListener("load", enableStylesheet);
+                } else if (link.attachEvent) {
+                    link.attachEvent("onload", enableStylesheet);
+                }
+
+                // Set rel and non-applicable media type to start an async request
+                // note: timeout allows this to happen async to let rendering continue in IE
+                setTimeout(function () {
+                    link.rel = "stylesheet";
+                    link.media = "only x";
+                });
+                // also enable media after 3 seconds,
+                // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+                setTimeout(enableStylesheet, 3000);
+            };
+
+            // loop through link elements in DOM
+            rp.poly = function () {
+                // double check this to prevent external calls from running
+                if (rp.support()) {
+                    return;
+                }
+                var links = w.document.getElementsByTagName("link");
+                for (var i = 0; i < links.length; i++) {
+                    var link = links[i];
+                    // qualify links to those with rel=preload and as=style attrs
+                    if (link.rel === "preload" && link.getAttribute("as") === "style" && !link.getAttribute("data-loadcss")) {
+                        // prevent rerunning on link
+                        link.setAttribute("data-loadcss", true);
+                        // bind listeners to toggle media back
+                        rp.bindMediaToggle(link);
+                    }
+                }
+            };
+
+            // if unsupported, run the polyfill
+            if (!rp.support()) {
+                // run once at least
+                rp.poly();
+
+                // rerun poly on an interval until onload
+                var run = w.setInterval(rp.poly, 500);
+                if (w.addEventListener) {
+                    w.addEventListener("load", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                } else if (w.attachEvent) {
+                    w.attachEvent("onload", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                }
+            }
+            // commonjs
+            if (typeof exports !== "undefined") {
+                exports.loadCSS = loadCSS;
+            }
+            else {
+                w.loadCSS = loadCSS;
+            }
+        }(typeof global !== "undefined" ? global : this));
+    </script>
+    <script src="//cdn.staticfile.org/jquery/3.2.1/jquery.min.js" defer></script>
+    <script src="/scripts/main.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+    <script>
+        (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+        (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date(); a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+        ga('create', 'UA-113782861-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >LoveMorgana&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">秒杀Service层开发</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>LoveMorgana's Blog</a>
+</header>
+
+    <div class="wrapper">
+        <div class="site-intro" style=
+
+
+
+
+
+
+
+
+height:50vh;
+
+>
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            秒杀Service层开发
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <!-- 文章页标签  -->
+            
+                <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Mysql">Mysql</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "SSM">SSM</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Service">Service</a>
+    
+</div>
+            
+            <div class="post-intro-meta">
+                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                <span class="post-intro-time">2018/01/02</span>
+                
+                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                    <span class="iconfont-archer">&#xe602;</span>
+                    <span id="busuanzi_value_page_pv"></span>
+                </span>
+                
+                <span class="shareWrapper">
+                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                    <span class="shareText">Share</span>
+                    <ul class="shareList">
+                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                            <div class="share-qrcode"></div>
+                        </li>
+                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                    </ul>
+                </span>
+            </div>
+        
+    </div>
+</div>
+        <script>
+  // load webfont-loader async, and add callback function
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+  
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntroTags = document.getElementsByClassName('post-intro-tags')[0],
+        postIntroMeat = document.getElementsByClassName('post-intro-meta')[0];
+      if (postIntroTags) {
+        postIntroTags.classList.add('post-fade-in');
+      }
+      if (postIntroMeat) {
+        postIntroMeat.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  async("https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", asyncCb)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="思考DAO层做的事"><a href="#思考DAO层做的事" class="headerlink" title="思考DAO层做的事"></a>思考DAO层做的事</h2><p>创建数据库,编写接口,书写mapper.xml(SQL),</p>
+<p>配置mybatis-config.xml,整合spring-dao.xml.</p>
+<p>总的来说就是接口设计和SQL编写.</p>
+<p>代码和SQL进行分离,方便Review.</p>
+<p>DAO拼接等逻辑在SERVICE层完成.</p>
+<p>DAO层也成为数据访问层,也就是对mysql等远程系统的操作.</p>
+<h2 id="service层包分类"><a href="#service层包分类" class="headerlink" title="service层包分类"></a>service层包分类</h2><p>dto –数据传输层,关于web和service的数据传递.</p>
+<p>entity –业务实体的存放.</p>
+<p>exception –秒杀结束,秒杀存货不足.</p>
+<p>enum –枚举类</p>
+<h3 id="service层接口的设计"><a href="#service层接口的设计" class="headerlink" title="service层接口的设计"></a>service层接口的设计</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * 业务接口:站在&quot;使用者&quot;角度设计接口</span><br><span class="line"> * 三个方面:方法定义粒度,参数,返回类型(return 类型/异常)</span><br><span class="line"> */</span><br><span class="line">public interface SeckillService &#123;</span><br><span class="line">    /**</span><br><span class="line">     * 展示所有秒杀记录</span><br><span class="line">     *</span><br><span class="line">     * @return</span><br><span class="line">     */</span><br><span class="line">    List&lt;Seckill&gt; getAllSeckill();</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * @param seckillId</span><br><span class="line">     * @return 展示单个秒杀记录</span><br><span class="line">     */</span><br><span class="line">    Seckill getBySeckillId(long seckillId);</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 行为接口</span><br><span class="line">     * 秒杀开启时输出秒杀接口地址,</span><br><span class="line">     * 否则输出系统时间和秒杀时间.</span><br><span class="line">     * @param seckillId</span><br><span class="line">     * @return Exposer</span><br><span class="line">     */</span><br><span class="line">    Exposer exportSeckillUrl(long seckillId);</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 执行秒杀操作,需要根据商品Id和用户名来执行操作,</span><br><span class="line">     * 同时对用户的url来源渠道做一次验证.即和之前秒杀开启前的MD5值作比较.</span><br><span class="line">     *</span><br><span class="line">     * @param seckillId</span><br><span class="line">     * @param userPhone</span><br><span class="line">     * @param md5</span><br><span class="line">     * @Return SeckillException</span><br><span class="line">     */</span><br><span class="line">    SeckillExecution executeSeckill(long seckillId, long userPhone, String md5)</span><br><span class="line">            throws SeckillException, SeckillClosedException, RepatKillException;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="数据传输数据的封装-dto"><a href="#数据传输数据的封装-dto" class="headerlink" title="数据传输数据的封装(dto)"></a>数据传输数据的封装(dto)</h3><h4 id="Exposer-暴露秒杀信息的的封装类"><a href="#Exposer-暴露秒杀信息的的封装类" class="headerlink" title="Exposer-暴露秒杀信息的的封装类"></a>Exposer-暴露秒杀信息的的封装类</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * 暴露秒杀地址DTO</span><br><span class="line"> */</span><br><span class="line">public class Exposer &#123;</span><br><span class="line">    //是否开启秒杀</span><br><span class="line">    public boolean exposed;</span><br><span class="line"></span><br><span class="line">    //MD5加密</span><br><span class="line">    private String md5;</span><br><span class="line"></span><br><span class="line">    //商品ID</span><br><span class="line">    private long seckillId;</span><br><span class="line"></span><br><span class="line">    //系统当前时间(毫秒),方便用户浏览器控制服务器的时间.</span><br><span class="line">    private Date now;</span><br><span class="line"></span><br><span class="line">    //秒杀开始时间</span><br><span class="line">    private Date start;</span><br><span class="line"></span><br><span class="line">    //秒杀结束时间</span><br><span class="line">    private Date end;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 不同的构造方法方便对象的初始化.</span><br><span class="line">     * 秒杀成功用到的构造方法</span><br><span class="line">     * @param exposed</span><br><span class="line">     * @param md5</span><br><span class="line">     * @param seckillId</span><br><span class="line">     */</span><br><span class="line">    public Exposer(boolean exposed, String md5, long seckillId) &#123;</span><br><span class="line">        this.exposed = exposed;</span><br><span class="line">        this.md5 = md5;</span><br><span class="line">        this.seckillId = seckillId;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 不符合条件,用到的构造方法</span><br><span class="line">     * @param exposed</span><br><span class="line">     * @param seckillId</span><br><span class="line">     * @param now</span><br><span class="line">     * @param start</span><br><span class="line">     * @param end</span><br><span class="line">     */</span><br><span class="line">    public Exposer(boolean exposed,long seckillId,Date now, Date start, Date end) &#123;</span><br><span class="line">        this.exposed=exposed;</span><br><span class="line">        this.seckillId=seckillId;</span><br><span class="line">        this.now = now;</span><br><span class="line">        this.start = start;</span><br><span class="line">        this.end = end;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 秒杀开始之前,需要对秒杀地址隐藏,加密.</span><br><span class="line">     * @param exposed</span><br><span class="line">     * @param seckillId</span><br><span class="line">     */</span><br><span class="line">    public Exposer(boolean exposed, long seckillId) &#123;</span><br><span class="line">        this.exposed = exposed;</span><br><span class="line">        this.seckillId = seckillId;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public boolean isExposed() &#123;</span><br><span class="line">        return exposed;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public Exposer setExposed(boolean exposed) &#123;</span><br><span class="line">        this.exposed = exposed;</span><br><span class="line">        return this;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public String getMd5() &#123;</span><br><span class="line">        return md5;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public Exposer setMd5(String md5) &#123;</span><br><span class="line">        this.md5 = md5;</span><br><span class="line">        return this;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public long getSeckillId() &#123;</span><br><span class="line">        return seckillId;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public Exposer setSeckillId(long seckillId) &#123;</span><br><span class="line">        this.seckillId = seckillId;</span><br><span class="line">        return this;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public Date getNow() &#123;</span><br><span class="line">        return now;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public Exposer setNow(Date now) &#123;</span><br><span class="line">        this.now = now;</span><br><span class="line">        return this;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public Date getStart() &#123;</span><br><span class="line">        return start;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public Exposer setStart(Date start) &#123;</span><br><span class="line">        this.start = start;</span><br><span class="line">        return this;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public Date getEnd() &#123;</span><br><span class="line">        return end;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public Exposer setEnd(Date end) &#123;</span><br><span class="line">        this.end = end;</span><br><span class="line">        return this;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="SeckillExecution-秒杀执行结果的封装类"><a href="#SeckillExecution-秒杀执行结果的封装类" class="headerlink" title="SeckillExecution-秒杀执行结果的封装类"></a>SeckillExecution-秒杀执行结果的封装类</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * 秒杀执行结果</span><br><span class="line"> */</span><br><span class="line">public class SeckillExecution &#123;</span><br><span class="line"></span><br><span class="line">    private long seckillId;</span><br><span class="line">    //秒杀执行结果状态</span><br><span class="line">    private int state;</span><br><span class="line">    //状态表示</span><br><span class="line">    private String stateInfo;</span><br><span class="line">    //秒杀成功对象</span><br><span class="line">    private SuccessKilled successKilled;</span><br><span class="line"></span><br><span class="line">    public SeckillExecution(long seckillId, SeckillStatEnum statEnum) &#123;</span><br><span class="line">        this.seckillId = seckillId;</span><br><span class="line">        this.state = statEnum.getState();</span><br><span class="line">        this.stateInfo = statEnum.getStateInfo();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public SeckillExecution(long seckillId, SeckillStatEnum statEnum, SuccessKilled successKilled) &#123;</span><br><span class="line">        this.seckillId = seckillId;</span><br><span class="line">        this.state = statEnum.getState();</span><br><span class="line">        this.stateInfo = statEnum.getStateInfo();</span><br><span class="line">        this.successKilled = successKilled;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public long getSeckillId() &#123;</span><br><span class="line">        return seckillId;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public SeckillExecution setSeckillId(long seckillId) &#123;</span><br><span class="line">        this.seckillId = seckillId;</span><br><span class="line">        return this;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public int getState() &#123;</span><br><span class="line">        return state;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public SeckillExecution setState(int state) &#123;</span><br><span class="line">        this.state = state;</span><br><span class="line">        return this;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public String getStateInfo() &#123;</span><br><span class="line">        return stateInfo;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public SeckillExecution setStateInfo(String stateInfo) &#123;</span><br><span class="line">        this.stateInfo = stateInfo;</span><br><span class="line">        return this;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public SuccessKilled getSuccessKilled() &#123;</span><br><span class="line">        return successKilled;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public SeckillExecution setSuccessKilled(SuccessKilled successKilled) &#123;</span><br><span class="line">        this.successKilled = successKilled;</span><br><span class="line">        return this;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="秒杀接口的实现–Impl"><a href="#秒杀接口的实现–Impl" class="headerlink" title="秒杀接口的实现–Impl"></a>秒杀接口的实现–Impl</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">@Service</span><br><span class="line">public class SeckillServiceImpl implements SeckillService &#123;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 使用slf4j的日志</span><br><span class="line">     */</span><br><span class="line">    private Logger logger = LoggerFactory.getLogger(this.getClass());</span><br><span class="line">    @Autowired</span><br><span class="line">    private SecKillDao secKillDao;</span><br><span class="line">    @Autowired</span><br><span class="line">    private SuccessKilledDao successKilledDao;</span><br><span class="line">    /**</span><br><span class="line">     * 与MD5结合的混淆的字符串.</span><br><span class="line">     */</span><br><span class="line">    private final String hx = &quot;aaskg8has$%^&amp;@i1564I^$&amp;*@$!&quot;;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public List&lt;Seckill&gt; getAllSeckill() &#123;</span><br><span class="line">        return secKillDao.queryAll(0, 4);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public Seckill getBySeckillId(long seckillId) &#123;</span><br><span class="line">        return secKillDao.queryById(seckillId);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 判断秒杀时间是否开始了</span><br><span class="line">     * @param seckillId</span><br><span class="line">     * @return</span><br><span class="line">     */</span><br><span class="line">    @Override</span><br><span class="line">    public Exposer exportSeckillUrl(long seckillId) &#123;</span><br><span class="line">        Seckill seckill = secKillDao.queryById(seckillId);</span><br><span class="line"></span><br><span class="line">        //系统当前时间</span><br><span class="line">        Date nowTime = new Date();</span><br><span class="line">        Date startTime = seckill.getStartTime();</span><br><span class="line">        Date endTime = seckill.getEndTime();</span><br><span class="line"></span><br><span class="line">        //1.如果seckill为null,不暴露地址.调用Exposer里面的初始化方法就可以了.</span><br><span class="line">        if (seckill == null) &#123;</span><br><span class="line">            return new Exposer(false, seckillId);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        //2.如果秒杀时间不符合,也不能进行秒杀.</span><br><span class="line">        if (nowTime.getTime() &lt; startTime.getTime() || nowTime.getTime() &gt; endTime.getTime()) &#123;</span><br><span class="line">            return new Exposer(false, seckillId, nowTime, startTime, endTime);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        //3.md5转换特定字符串的过程,是不可逆的.</span><br><span class="line">        String md5 = getMd5(seckillId);</span><br><span class="line">        return new Exposer(true, md5, seckillId);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 生成MD5字符串</span><br><span class="line">     * @param seckillId</span><br><span class="line">     * @return</span><br><span class="line">     */</span><br><span class="line">    private String getMd5(long seckillId) &#123;</span><br><span class="line">        String base = seckillId + &quot;/&quot; + hx;</span><br><span class="line">        String md5 = DigestUtils.md5DigestAsHex(base.getBytes());</span><br><span class="line">        return md5;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 执行秒杀的实现,主要校验MD5来实现秒杀</span><br><span class="line">     * @param seckillId</span><br><span class="line">     * @param userPhone</span><br><span class="line">     * @param md5</span><br><span class="line">     * @return</span><br><span class="line">     * @throws SeckillException</span><br><span class="line">     * @throws SeckillClosedException</span><br><span class="line">     * @throws RepatKillException</span><br><span class="line">     */</span><br><span class="line">    @Override</span><br><span class="line">    public SeckillExecution executeSeckill(long seckillId, long userPhone, String md5) throws SeckillException, SeckillClosedException, RepatKillException &#123;</span><br><span class="line"></span><br><span class="line">        //1.md5匹配不上,系统出现异常</span><br><span class="line">        if (md5 == null || !md5.equals(getMd5(seckillId))) &#123;</span><br><span class="line">            throw new SeckillException(&quot;Seckill data rewite! 你可能使用了重复秒杀的插件 !=QAQ=!&quot;);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        /**</span><br><span class="line">         * 2. md5匹配成功,</span><br><span class="line">         * 执行秒杀逻辑:</span><br><span class="line">         *  --减库存</span><br><span class="line">         *  --写明细</span><br><span class="line">         */</span><br><span class="line">        Date killTime = new Date();</span><br><span class="line">        try &#123;</span><br><span class="line">            //减库存</span><br><span class="line">            int updateCount = secKillDao.reduceNumber(seckillId, killTime);</span><br><span class="line">            //更新数&lt;0,说明减库存失败,没有更新到记录</span><br><span class="line">            if (updateCount &lt; 0) &#123;</span><br><span class="line">                //秒杀过期</span><br><span class="line">                throw new SeckillClosedException(&quot;Seckill is closed!&quot;);</span><br><span class="line">            &#125;</span><br><span class="line">            //写明细</span><br><span class="line">            int insertState = successKilledDao.insertSuccessKilled(seckillId, userPhone);</span><br><span class="line">            //唯一的验证标准就是验证 秒杀商品的ID和用户手机号.</span><br><span class="line">            //之前秒杀成功,state=1.再次秒杀同一seckillId的商品,他就会秒杀不成功了,因为我们设置的是insert ignore,插入就会忽略,insertState返回的就是0.</span><br><span class="line">            if (insertState &lt;= 0) &#123;</span><br><span class="line">                //重复秒杀</span><br><span class="line">                throw new RepatKillException(&quot;Seckill repeted!&quot;);</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                //秒杀成功</span><br><span class="line">                SuccessKilled successKilled = successKilledDao.querySuccessKilledWithSeckill(seckillId, userPhone);</span><br><span class="line">                return new SeckillExecution(seckillId,SeckillStatEnum.SUCCESS, successKilled);</span><br><span class="line">                //TODO</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        //这些异常的抛出有次序.我们要友好一些,要知道抛出的是哪个部分的异常.</span><br><span class="line">        //重复秒杀的异常</span><br><span class="line">        catch (RepatKillException e1) &#123;</span><br><span class="line">            throw e1;</span><br><span class="line">        &#125;</span><br><span class="line">        //秒杀时间过期的异常</span><br><span class="line">        catch (SeckillClosedException e2) &#123;</span><br><span class="line">            throw e2;</span><br><span class="line">        &#125;</span><br><span class="line">        catch (Exception e) &#123;</span><br><span class="line">            logger.error(e.getMessage(), e);</span><br><span class="line">            //所有编译期异常都要转换为运行期异常</span><br><span class="line">            throw new SeckillException(&quot;seckill inner error:&quot; + e.getMessage());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="数据字典的形成"><a href="#数据字典的形成" class="headerlink" title="数据字典的形成"></a>数据字典的形成</h4><p>根据条件判断需要抛出的stateInfo提示信息,直接在里面写,可用性很差,所以我们采用枚举类的方式来规范statInfo的分配.</p>
+<h4 id="枚举类SeckillStatEnum"><a href="#枚举类SeckillStatEnum" class="headerlink" title="枚举类SeckillStatEnum"></a>枚举类SeckillStatEnum</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * 使用枚举类表述常量数据字典</span><br><span class="line"> */</span><br><span class="line">public enum SeckillStatEnum &#123;</span><br><span class="line">    SUCCESS(1,&quot;秒杀成功!&quot;),</span><br><span class="line">    END(0,&quot;秒杀结束!&quot;),</span><br><span class="line">    REPEAT_KILL(-1,&quot;重复秒杀!&quot;),</span><br><span class="line">    INNER_ERROR(-2,&quot;系统异常!&quot;),</span><br><span class="line">    DATA_REWRITE(-3,&quot;数据篡改!&quot;);</span><br><span class="line"></span><br><span class="line">    private int state;</span><br><span class="line">    private String stateInfo;</span><br><span class="line"></span><br><span class="line">    SeckillStatEnum(int state, String stateInfo) &#123;</span><br><span class="line">        this.state = state;</span><br><span class="line">        this.stateInfo = stateInfo;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public int getState() &#123;</span><br><span class="line">        return state;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public String getStateInfo() &#123;</span><br><span class="line">        return stateInfo;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //此静态方法迭代所有的类型</span><br><span class="line">    public static SeckillStatEnum stateOf(int index) &#123;</span><br><span class="line">        for (SeckillStatEnum state : values()) &#123;</span><br><span class="line">            //values()用来拿到所有类型</span><br><span class="line">            if (state.getState() == index) &#123;</span><br><span class="line">                return state;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        return null;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>基于以前的构造方法改造成含有枚举的表示方法.</p>
+<p>秒杀成功用到的构造方法:<br>改造前<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">public SeckillExecution(long seckillId, int state, String stateInfo, SuccessKilled successKilled) &#123;</span><br><span class="line">     this.seckillId = seckillId;</span><br><span class="line">     this.state = state;</span><br><span class="line">     this.stateInfo = stateInfo;</span><br><span class="line">     this.successKilled = successKilled;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure></p>
+<p>改造后<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">public SeckillExecution(long seckillId, SeckillStatEnum statEnum) &#123;</span><br><span class="line">        this.seckillId = seckillId;</span><br><span class="line">        this.state = statEnum.getState();</span><br><span class="line">        this.stateInfo = statEnum.getStateInfo();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public SeckillExecution(long seckillId, SeckillStatEnum statEnum, SuccessKilled successKilled) &#123;</span><br><span class="line">        this.seckillId = seckillId;</span><br><span class="line">        this.state = statEnum.getState();</span><br><span class="line">        this.stateInfo = statEnum.getStateInfo();</span><br><span class="line">        this.successKilled = successKilled;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="异常的处理–Exception"><a href="#异常的处理–Exception" class="headerlink" title="异常的处理–Exception"></a>异常的处理–Exception</h4><h5 id="秒杀异常"><a href="#秒杀异常" class="headerlink" title="秒杀异常"></a>秒杀异常</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * 后两个异常都属于秒杀异常,所以继承此类即可.</span><br><span class="line"> */</span><br><span class="line">public class SeckillException extends RuntimeException &#123;</span><br><span class="line">    public SeckillException(String message) &#123;</span><br><span class="line">        super(message);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public SeckillException(String message, Throwable cause) &#123;</span><br><span class="line">        super(message, cause);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="重复秒杀异常"><a href="#重复秒杀异常" class="headerlink" title="重复秒杀异常"></a>重复秒杀异常</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * 重复秒杀异常(运行期异常)</span><br><span class="line"> * java的异常一般分为运行期异常和编译期异常</span><br><span class="line"> * spring声明式事务只接收运行期异常事务回滚策略.抛出非声明式异常,spring不会对其进行事务回滚.</span><br><span class="line"> */</span><br><span class="line">public class RepatKillException extends SeckillException&#123;</span><br><span class="line">    public RepatKillException(String message) &#123;</span><br><span class="line">        super(message);</span><br><span class="line">    &#125;</span><br><span class="line">    public RepatKillException(String message, Throwable cause) &#123;</span><br><span class="line">        super(message, cause);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="秒杀关闭异常"><a href="#秒杀关闭异常" class="headerlink" title="秒杀关闭异常"></a>秒杀关闭异常</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">package org.seckill.exception;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * @author: ligang</span><br><span class="line"> * date: 2018/2/7</span><br><span class="line"> * time: 15:39</span><br><span class="line"> * 秒杀时间关闭异常</span><br><span class="line"> */</span><br><span class="line">public class SeckillClosedException extends SeckillException &#123;</span><br><span class="line">    /**</span><br><span class="line">     * 运行期异常的继承,但是他们都属于秒杀异常</span><br><span class="line">     * @param message</span><br><span class="line">     */</span><br><span class="line">    public SeckillClosedException(String message) &#123;</span><br><span class="line">        super(message);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public SeckillClosedException(String message, Throwable cause) &#123;</span><br><span class="line">        super(message, cause);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="使用Spring托管SERVICE依赖理论"><a href="#使用Spring托管SERVICE依赖理论" class="headerlink" title="使用Spring托管SERVICE依赖理论"></a>使用Spring托管SERVICE依赖理论</h2><h3 id="SpringIOC的概念"><a href="#SpringIOC的概念" class="headerlink" title="SpringIOC的概念"></a>SpringIOC的概念</h3><p>IOC-依赖注入</p>
+<p>SpringIOC的过程会创建一个对象工厂,还会进行依赖管理,最终给一个一致的访问接口.</p>
+<p>SuccessKillSERVICE完整的实例如下:</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-63c952d8ab503399.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p><strong>使用IOC的好处:</strong></p>
+<ol>
+<li>对象创建统一托管</li>
+<li>规范的声明周期管理</li>
+<li>灵活的依赖注入</li>
+<li>一致的获取对象(默认是单例)</li>
+</ol>
+<p>SpringIOC的注入方式和场景</p>
+<p>三种方式实现如下</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-7337c3d038b7ae0e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>我们的IOC使用:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">XML配置</span><br><span class="line">package-scan(包扫描)</span><br><span class="line">Annotation注解</span><br></pre></td></tr></table></figure>
+<h3 id="springIOC的注解用法"><a href="#springIOC的注解用法" class="headerlink" title="springIOC的注解用法"></a>springIOC的注解用法</h3><ol>
+<li>先进行包扫描</li>
+</ol>
+<p>在spring-service.xml里面输入<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;!--扫描Service包下所有使用注解的类型--&gt;</span><br><span class="line">    &lt;context:component-scan base-package=&quot;org.seckill.service&quot;/&gt;</span><br></pre></td></tr></table></figure></p>
+<ol>
+<li>注解部分</li>
+</ol>
+<ul>
+<li>@Component  如果你不知道该写@Service/@Controller的时候,@Component就是一个比较笼统的Spring容器在一个组件实例.</li>
+<li>@Service</li>
+<li>@Controller</li>
+<li>dao里面的所有内容都会通过mapper.xml文件初始化放进Spring容器中,然后spring容器中回去Dao的实例,注入到相关的ervice下面</li>
+<li>@Autowired(自动注入,就不用自己new实现类了) / @Resource / @Inject 注入方式</li>
+</ul>
+<h3 id="spring的声明式事务"><a href="#spring的声明式事务" class="headerlink" title="spring的声明式事务"></a>spring的声明式事务</h3><p>声明式事务就是不关心事务的开启或者提交.而是交给第三方框架来实现的.解脱事务代码.</p>
+<p>1.执行事务的步骤<br><figure class="highlight lsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">开启事务</span><br><span class="line">修改SQL<span class="number">-1</span>(更新/增加/删除)</span><br><span class="line">修改SQL<span class="number">-2</span></span><br><span class="line">修改SQL<span class="number">-3</span></span><br><span class="line">提交或者回滚</span><br></pre></td></tr></table></figure></p>
+<p>2.声明式事务的使用方式<br><figure class="highlight less"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-tag">ProxyFactoryBean</span> + <span class="selector-tag">XML</span>  <span class="selector-tag">----</span>  早期的使用方式(<span class="number">2.0</span>)</span><br><span class="line"><span class="selector-tag">tx</span><span class="selector-pseudo">:advice+aop</span>命名空间    <span class="selector-tag">----</span>  一次配置永久生效(使用最多的方式,不太关心事务是如何操作的)</span><br><span class="line">注解@<span class="selector-tag">Transaction</span>        <span class="selector-tag">-----</span>  注解控制(推荐使用,对我们有利)</span><br></pre></td></tr></table></figure></p>
+<p>3.事务方法嵌套</p>
+<p>声明式事务独有的概念<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">传播行为 --- spring默认是`propagation_required`,</span><br><span class="line">意思就是说当有一个新的事务加入中来,会直接加入到已经存在的事务,</span><br><span class="line">如果有事务存在就会直接加入到原有的事务当中,如果没有就会创建一个新的事务</span><br></pre></td></tr></table></figure></p>
+<p>4.什么时候回滚事务<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1. 抛出运行期异常(RuntimeException)可以执行回滚,非运行期异常可能不会全部回滚.</span><br><span class="line">2. 小心不当的try-catch,要是你使用try-catch包括一个有异常的程序,spring就会感知不到它会出现异常.</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li><p>声明式事务的配置:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;!--2.配置事务管理器,我们使用的是jdbc的事务管理器--&gt;</span><br><span class="line">   &lt;bean id=&quot;transactionManager&quot; class=&quot;org.springframework.jdbc.datasource.DataSourceTransactionManager&quot;&gt;</span><br><span class="line">       &lt;!--注入数据库连接池--&gt;</span><br><span class="line">       &lt;property name=&quot;dataSource&quot; ref=&quot;dataSource&quot;/&gt;</span><br><span class="line"></span><br><span class="line">   &lt;/bean&gt;</span><br><span class="line"></span><br><span class="line">   &lt;!--3.配置基于声明式注解的声明式事务</span><br><span class="line">       当你输入tx:annotation-driven的时候,它会自动的把相关的schema加上</span><br><span class="line">       默认使用注解来管理事务行为</span><br><span class="line">   --&gt;</span><br><span class="line">   &lt;tx:annotation-driven transaction-manager=&quot;transactionManager&quot;/&gt;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>@Transaction的使用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">使用注解控制事务方法的优点:</span><br><span class="line">     1. 开发团队达成一致的约定,明确标注事务方法的编程风格</span><br><span class="line">     2. 保证事务方法的执行时间尽可能短,不要穿插其他的网络操作,比如:RPC/HTTP请求.或者剥离到事务方法外部:就是把它们写到方法的上一层.</span><br><span class="line">     3. 不是所有的方法都使用事务,如:只有一条修改操作,只读操作不需要事务控制.(mysql的行级锁有涉及到)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="service测试"><a href="#service测试" class="headerlink" title="service测试"></a>service测试</h3><p><a href="https://logback.qos.ch/manual/configuration.html" target="_blank" rel="noopener">slf4j接口的实现logback官网配置文件</a></p>
+<p>日志logback.xml的配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;</span><br><span class="line">&lt;!--打印到控制台,默认级别是debug,时间,线程和日志的格式--&gt;</span><br><span class="line">&lt;configuration debug=&quot;true&quot;&gt;</span><br><span class="line">    &lt;appender name=&quot;STDOUT&quot; class=&quot;ch.qos.logback.core.ConsoleAppender&quot;&gt;</span><br><span class="line">        &lt;!-- encoders are  by default assigned the type</span><br><span class="line">             ch.qos.logback.classic.encoder.PatternLayoutEncoder --&gt;</span><br><span class="line">        &lt;encoder&gt;</span><br><span class="line">            &lt;pattern&gt;%d&#123;HH:mm:ss.SSS&#125; [%thread] %-5level %logger&#123;36&#125; - %msg%n&lt;/pattern&gt;</span><br><span class="line">        &lt;/encoder&gt;</span><br><span class="line">    &lt;/appender&gt;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    &lt;root level=&quot;debug&quot;&gt;</span><br><span class="line">        &lt;appender-ref ref=&quot;STDOUT&quot; /&gt;</span><br><span class="line">    &lt;/root&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="测试类"><a href="#测试类" class="headerlink" title="测试类:"></a>测试类:</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">@RunWith(SpringJUnit4ClassRunner.class)</span><br><span class="line">@ContextConfiguration(&#123;&quot;classpath:spring/spring-dao.xml&quot;,&quot;classpath:spring/spring-service.xml&quot;&#125;)</span><br><span class="line">public class SeckillServiceTest &#123;</span><br><span class="line">    //使用日志</span><br><span class="line">    private final Logger logger = LoggerFactory.getLogger(this.getClass());</span><br><span class="line"></span><br><span class="line">    @Autowired</span><br><span class="line">    private SeckillService seckillService;</span><br><span class="line">    @Test</span><br><span class="line">    public void getAllSeckill() throws Exception &#123;</span><br><span class="line">        List&lt;Seckill&gt; list = seckillService.getAllSeckill();</span><br><span class="line">        logger.info(&quot;list =&#123;&#125;,&quot;,list);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Test</span><br><span class="line">    public void getBySeckillId() throws Exception &#123;</span><br><span class="line">        Seckill seckill = seckillService.getBySeckillId(1000L);</span><br><span class="line">        logger.info(&quot;list =&#123;&#125;,&quot;,seckill);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Test</span><br><span class="line">    public void exportSeckillUrl() throws Exception &#123;</span><br><span class="line">        Exposer exposer = seckillService.exportSeckillUrl(1000L);</span><br><span class="line">        logger.info(&quot;exposer =&#123;&#125;,&quot;,exposer);</span><br><span class="line">        /**</span><br><span class="line">         *  exposer =Exposer&#123;exposed=true, md5=&apos;d592364bb958482949d97e04131f4b2e&apos;, seckillId=1000, now=null, start=null, end=null&#125;,</span><br><span class="line">         */</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Test</span><br><span class="line">    public void executeSeckill() throws Exception &#123;</span><br><span class="line">        long id =1000L;</span><br><span class="line">        long phone= 1245564659;</span><br><span class="line">        String md5=&quot;d592364bb958482949d97e04131f4b2e&quot;;</span><br><span class="line">         try &#123;</span><br><span class="line">             SeckillExecution seckillExecution = seckillService.executeSeckill(id, phone, md5);</span><br><span class="line">             logger.info(&quot;seckillExecution:&quot; + seckillExecution);</span><br><span class="line">         &#125;</span><br><span class="line">         catch(RepatKillException e)&#123;</span><br><span class="line">             logger.error(e.getMessage());</span><br><span class="line">         &#125;</span><br><span class="line">         catch (SeckillClosedException e)&#123;</span><br><span class="line">             logger.error(e.getMessage());</span><br><span class="line">         &#125;</span><br><span class="line">        /**</span><br><span class="line">         * 再一次执行秒杀会出现运行期异常.</span><br><span class="line">         * org.seckill.exception.RepatKillException: Seckill repeted!</span><br><span class="line">         */</span><br><span class="line">    &#125;</span><br><span class="line">    @Test</span><br><span class="line">    public void testSeckillLogic() throws Exception&#123;</span><br><span class="line">        long id =1000L;</span><br><span class="line">        Exposer exposer = seckillService.exportSeckillUrl(id);</span><br><span class="line">        logger.info(&quot;exposer =&#123;&#125;,&quot;,exposer);</span><br><span class="line">        if(exposer.isExposed())&#123;</span><br><span class="line">            //开始执行秒杀</span><br><span class="line">            long phone= 1245564359;</span><br><span class="line">            String md5 = exposer.getMd5();</span><br><span class="line">            try &#123;</span><br><span class="line">                SeckillExecution seckillExecution = seckillService.executeSeckill(id, phone, md5);</span><br><span class="line">                logger.info(&quot;seckillExecution:&quot; + seckillExecution);</span><br><span class="line">            &#125;</span><br><span class="line">            catch(RepatKillException e)&#123;</span><br><span class="line">                logger.error(e.getMessage());</span><br><span class="line">            &#125;</span><br><span class="line">            catch (SeckillClosedException e)&#123;</span><br><span class="line">                logger.error(e.getMessage());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        else&#123;</span><br><span class="line">            logger.warn(&quot;exposer=&#123;&#125;&quot;,exposer);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">//id=1001 的测试 seckillExecution:SeckillExecution&#123;seckillId=1001, state=1, stateInfo=&apos;秒杀成功!&apos;, successKilled=SuccessKilled&#123;seckillId=1001, userPhone=1245564359, state=0, createTime=Tue Feb 20 13:19:46 CST 2018&#125;&#125;</span><br><span class="line">//id=1000 的测试 21:22:24.838 [main] WARN  o.secKill.service.SeckillServiceTest - exposer=Exposer&#123;exposed=false, md5=&apos;null&apos;, seckillId=1000, now=Tue Feb 20 21:22:24 CST 2018, start=Tue Feb 20 12:41:15 CST 2018, end=Tue Feb 20 12:41:15 CST 2018&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </article>
+    <!-- 前后页  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2018/01/02/秒杀Web层开发/" title= 秒杀web层开发 >
+                    <div class="nextTitle">秒杀web层开发</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2018/01/01/Markdown/" title= markdown语法 >
+                    <div class="prevTitle">markdown语法</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid= MTAyMC8zNDE4Ni8xMDcyMw==>
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!--PC版-->
+
+    <!--PC版-->
+
+
+    
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:15733207536@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/lovemoganna" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title=wechat>
+                  
+                  <img class="profile-qr" src="/assets/wechat.jpg" />
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/luoyupiaoshang" class="iconfont-archer twitter" target="_blank" title=twitter></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://luoyupiaoshang.club/" target="_blank">luoyupiaoshang</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+        <span id="busuanzi_container_site_pv">访问总计 <span id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+    
+</footer>
+
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#思考DAO层做的事"><span class="toc-number">1.</span> <span class="toc-text">思考DAO层做的事</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#service层包分类"><span class="toc-number">2.</span> <span class="toc-text">service层包分类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#service层接口的设计"><span class="toc-number">2.1.</span> <span class="toc-text">service层接口的设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#数据传输数据的封装-dto"><span class="toc-number">2.2.</span> <span class="toc-text">数据传输数据的封装(dto)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Exposer-暴露秒杀信息的的封装类"><span class="toc-number">2.2.1.</span> <span class="toc-text">Exposer-暴露秒杀信息的的封装类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#SeckillExecution-秒杀执行结果的封装类"><span class="toc-number">2.2.2.</span> <span class="toc-text">SeckillExecution-秒杀执行结果的封装类</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#秒杀接口的实现–Impl"><span class="toc-number">3.</span> <span class="toc-text">秒杀接口的实现–Impl</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#数据字典的形成"><span class="toc-number">3.0.1.</span> <span class="toc-text">数据字典的形成</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#枚举类SeckillStatEnum"><span class="toc-number">3.0.2.</span> <span class="toc-text">枚举类SeckillStatEnum</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#异常的处理–Exception"><span class="toc-number">3.0.3.</span> <span class="toc-text">异常的处理–Exception</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#秒杀异常"><span class="toc-number">3.0.3.1.</span> <span class="toc-text">秒杀异常</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#重复秒杀异常"><span class="toc-number">3.0.3.2.</span> <span class="toc-text">重复秒杀异常</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#秒杀关闭异常"><span class="toc-number">3.0.3.3.</span> <span class="toc-text">秒杀关闭异常</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用Spring托管SERVICE依赖理论"><span class="toc-number">4.</span> <span class="toc-text">使用Spring托管SERVICE依赖理论</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#SpringIOC的概念"><span class="toc-number">4.1.</span> <span class="toc-text">SpringIOC的概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#springIOC的注解用法"><span class="toc-number">4.2.</span> <span class="toc-text">springIOC的注解用法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#spring的声明式事务"><span class="toc-number">4.3.</span> <span class="toc-text">spring的声明式事务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#service测试"><span class="toc-number">4.4.</span> <span class="toc-text">service测试</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#测试类"><span class="toc-number">5.</span> <span class="toc-text">测试类:</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">归档</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">标签</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">分类</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-archive"> Total : 25 </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/03</span><a class="archive-post-title" href= "/2018/04/03/interview/" >李刚_产品经理实习生</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/28</span><a class="archive-post-title" href= "/2018/02/28/mysql设计以及架构优化/" >mysql设计以及架构优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/25</span><a class="archive-post-title" href= "/2018/02/25/Redis集群的搭建/" >Redis-cluster搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/redis/" >Redis基本操作</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/spring和redis整合/" >Spring与Redis整合</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/Redis集群接口/" >Redis接口的编写</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/22</span><a class="archive-post-title" href= "/2018/02/22/DB02-数据库字段设计规范/" >DB02-数据库字段设计规范</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span><a class="archive-post-title" href= "/2018/02/01/mysql日志划分/" >mysql服务器日志</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/27</span><a class="archive-post-title" href= "/2018/01/27/选择常规查询和慢速查询日志的输出目的地/" >选择常规查询和慢速查询日志的输出目的地</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span><a class="archive-post-title" href= "/2018/01/25/集群环境中解决Session共享问题/" >集群环境中解决Session共享问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/24</span><a class="archive-post-title" href= "/2018/01/24/ajax跨域问题/" >ajax跨域问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/09</span><a class="archive-post-title" href= "/2018/01/09/WebCrawler/" >WebCrawler-网络爬虫01</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/08</span><a class="archive-post-title" href= "/2018/01/08/区块链/" >区块链(Blockchain)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀Web层开发/" >秒杀web层开发</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀service层开发/" >秒杀Service层开发</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀高并发优化/" >秒杀高并发优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/Markdown/" >markdown语法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/秒杀概述/" >秒杀概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/数据库的基本操作/" >数据库的基本操作</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/秒杀Dao层开发/" >秒杀Dao层开发</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2017 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/apringData-01/" >springData-01</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/SpringData-02/" >springData-02</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/SpringData-03/" >springData-03</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href= "/2017/11/09/springboot/" >SpringBoot初识</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href= "/2017/11/09/Spring事务/" >Spring事务</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="mysql设计"><span class="iconfont-archer">&#xe606;</span>mysql设计</span>
+    
+        <span class="sidebar-tag-name" data-tags="springdata"><span class="iconfont-archer">&#xe606;</span>springdata</span>
+    
+        <span class="sidebar-tag-name" data-tags="Redis"><span class="iconfont-archer">&#xe606;</span>Redis</span>
+    
+        <span class="sidebar-tag-name" data-tags="Redis-cluster"><span class="iconfont-archer">&#xe606;</span>Redis-cluster</span>
+    
+        <span class="sidebar-tag-name" data-tags="markdown"><span class="iconfont-archer">&#xe606;</span>markdown</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="Transaction"><span class="iconfont-archer">&#xe606;</span>Transaction</span>
+    
+        <span class="sidebar-tag-name" data-tags="爬虫的原理"><span class="iconfont-archer">&#xe606;</span>爬虫的原理</span>
+    
+        <span class="sidebar-tag-name" data-tags="爬虫架构"><span class="iconfont-archer">&#xe606;</span>爬虫架构</span>
+    
+        <span class="sidebar-tag-name" data-tags="Session共享"><span class="iconfont-archer">&#xe606;</span>Session共享</span>
+    
+        <span class="sidebar-tag-name" data-tags="个人简历"><span class="iconfont-archer">&#xe606;</span>个人简历</span>
+    
+        <span class="sidebar-tag-name" data-tags="实习生"><span class="iconfont-archer">&#xe606;</span>实习生</span>
+    
+        <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
+    
+        <span class="sidebar-tag-name" data-tags="ServiceLog"><span class="iconfont-archer">&#xe606;</span>ServiceLog</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构优化"><span class="iconfont-archer">&#xe606;</span>架构优化</span>
+    
+        <span class="sidebar-tag-name" data-tags="FT中文网"><span class="iconfont-archer">&#xe606;</span>FT中文网</span>
+    
+        <span class="sidebar-tag-name" data-tags="区块链"><span class="iconfont-archer">&#xe606;</span>区块链</span>
+    
+        <span class="sidebar-tag-name" data-tags="SSM"><span class="iconfont-archer">&#xe606;</span>SSM</span>
+    
+        <span class="sidebar-tag-name" data-tags="Web"><span class="iconfont-archer">&#xe606;</span>Web</span>
+    
+        <span class="sidebar-tag-name" data-tags="Bootstrap"><span class="iconfont-archer">&#xe606;</span>Bootstrap</span>
+    
+        <span class="sidebar-tag-name" data-tags="Service"><span class="iconfont-archer">&#xe606;</span>Service</span>
+    
+        <span class="sidebar-tag-name" data-tags="增删改查"><span class="iconfont-archer">&#xe606;</span>增删改查</span>
+    
+        <span class="sidebar-tag-name" data-tags="RowsLock"><span class="iconfont-archer">&#xe606;</span>RowsLock</span>
+    
+        <span class="sidebar-tag-name" data-tags="高并发"><span class="iconfont-archer">&#xe606;</span>高并发</span>
+    
+        <span class="sidebar-tag-name" data-tags="SpringBoot"><span class="iconfont-archer">&#xe606;</span>SpringBoot</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="mysql"><span class="iconfont-archer">&#xe60a;</span>mysql</span>
+    
+        <span class="sidebar-category-name" data-categories="spring"><span class="iconfont-archer">&#xe60a;</span>spring</span>
+    
+        <span class="sidebar-category-name" data-categories="Redis"><span class="iconfont-archer">&#xe60a;</span>Redis</span>
+    
+        <span class="sidebar-category-name" data-categories="Seckill"><span class="iconfont-archer">&#xe60a;</span>Seckill</span>
+    
+        <span class="sidebar-category-name" data-categories="SpringBoot"><span class="iconfont-archer">&#xe60a;</span>SpringBoot</span>
+    
+        <span class="sidebar-category-name" data-categories="区块链-Blockchain"><span class="iconfont-archer">&#xe60a;</span>区块链-Blockchain</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div>
+
+    <script>
+    var siteMeta = {
+        root: '/',
+        author: 'LiGang'
+    }
+</script>
+    <!-- busuanzi  -->
+    
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+    
+    </body>
+</html>
+
+

@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html>
+    <!-- title -->
+
+
+
+
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
+    <title>秒杀Dao层开发 · LoveMorgana&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+        box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s 1;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= /css/style.css?v=20180317 as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" type="text/css" href= /css/mobile.css?v=20180317 media="(max-width: 980px)"/>
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        
+    <link rel="icon" href= /assets/favicon.ico>
+    <script>
+        (function (w) {
+            "use strict";
+            // rel=preload support test
+            if (!w.loadCSS) {
+                w.loadCSS = function () { };
+            }
+            // define on the loadCSS obj
+            var rp = loadCSS.relpreload = {};
+            // rel=preload feature support test
+            // runs once and returns a function for compat purposes
+            rp.support = (function () {
+                var ret;
+                try {
+                    ret = w.document.createElement("link").relList.supports("preload");
+                } catch (e) {
+                    ret = false;
+                }
+                return function () {
+                    return ret;
+                };
+            })();
+
+            // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+            // then change that media back to its intended value on load
+            rp.bindMediaToggle = function (link) {
+                // remember existing media attr for ultimate state, or default to 'all'
+                var finalMedia = link.media || "all";
+
+                function enableStylesheet() {
+                    link.media = finalMedia;
+                }
+
+                // bind load handlers to enable media
+                if (link.addEventListener) {
+                    link.addEventListener("load", enableStylesheet);
+                } else if (link.attachEvent) {
+                    link.attachEvent("onload", enableStylesheet);
+                }
+
+                // Set rel and non-applicable media type to start an async request
+                // note: timeout allows this to happen async to let rendering continue in IE
+                setTimeout(function () {
+                    link.rel = "stylesheet";
+                    link.media = "only x";
+                });
+                // also enable media after 3 seconds,
+                // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+                setTimeout(enableStylesheet, 3000);
+            };
+
+            // loop through link elements in DOM
+            rp.poly = function () {
+                // double check this to prevent external calls from running
+                if (rp.support()) {
+                    return;
+                }
+                var links = w.document.getElementsByTagName("link");
+                for (var i = 0; i < links.length; i++) {
+                    var link = links[i];
+                    // qualify links to those with rel=preload and as=style attrs
+                    if (link.rel === "preload" && link.getAttribute("as") === "style" && !link.getAttribute("data-loadcss")) {
+                        // prevent rerunning on link
+                        link.setAttribute("data-loadcss", true);
+                        // bind listeners to toggle media back
+                        rp.bindMediaToggle(link);
+                    }
+                }
+            };
+
+            // if unsupported, run the polyfill
+            if (!rp.support()) {
+                // run once at least
+                rp.poly();
+
+                // rerun poly on an interval until onload
+                var run = w.setInterval(rp.poly, 500);
+                if (w.addEventListener) {
+                    w.addEventListener("load", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                } else if (w.attachEvent) {
+                    w.attachEvent("onload", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                }
+            }
+            // commonjs
+            if (typeof exports !== "undefined") {
+                exports.loadCSS = loadCSS;
+            }
+            else {
+                w.loadCSS = loadCSS;
+            }
+        }(typeof global !== "undefined" ? global : this));
+    </script>
+    <script src="//cdn.staticfile.org/jquery/3.2.1/jquery.min.js" defer></script>
+    <script src="/scripts/main.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+    <script>
+        (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+        (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date(); a = s.createElement(o),
+        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+        ga('create', 'UA-113782861-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >LoveMorgana&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">秒杀Dao层开发</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>LoveMorgana's Blog</a>
+</header>
+
+    <div class="wrapper">
+        <div class="site-intro" style=
+
+
+
+
+
+
+
+
+height:50vh;
+
+>
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            秒杀Dao层开发
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <!-- 文章页标签  -->
+            
+                <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Mysql">Mysql</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "SSM">SSM</a>
+    
+</div>
+            
+            <div class="post-intro-meta">
+                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                <span class="post-intro-time">2018/01/01</span>
+                
+                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                    <span class="iconfont-archer">&#xe602;</span>
+                    <span id="busuanzi_value_page_pv"></span>
+                </span>
+                
+                <span class="shareWrapper">
+                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                    <span class="shareText">Share</span>
+                    <ul class="shareList">
+                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                            <div class="share-qrcode"></div>
+                        </li>
+                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                    </ul>
+                </span>
+            </div>
+        
+    </div>
+</div>
+        <script>
+  // load webfont-loader async, and add callback function
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+  
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntroTags = document.getElementsByClassName('post-intro-tags')[0],
+        postIntroMeat = document.getElementsByClassName('post-intro-meta')[0];
+      if (postIntroTags) {
+        postIntroTags.classList.add('post-fade-in');
+      }
+      if (postIntroMeat) {
+        postIntroMeat.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  async("https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", asyncCb)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="数据库设计编码"><a href="#数据库设计编码" class="headerlink" title="数据库设计编码"></a>数据库设计编码</h2><p>数据库设计工作:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">1.创建数据库seckill</span><br><span class="line">2.使用数据库seckill</span><br><span class="line"></span><br><span class="line">3.创建秒杀数据库存表:</span><br><span class="line">    3.1.存储引擎的选用.</span><br><span class="line">    3.2.具体字段的编辑.</span><br><span class="line">    3.3.索引的创建.</span><br><span class="line">4.初始化数据(插入几组数据)</span><br><span class="line"></span><br><span class="line">5.创建用户明细表</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">秒杀成功明细表里面的主键不使用自增的主键,</span><br><span class="line"></span><br><span class="line">而是采用联合主键</span><br><span class="line"></span><br><span class="line">同一个用户只可能对同一个库存内的商品做秒杀,</span><br><span class="line">所以设计为</span><br><span class="line">PRIMARY_KEY(seckill_id,user_phone),</span><br></pre></td></tr></table></figure></p>
+<p>详情如下:<br><strong>!!! 千万注意:表的字段,比如:<code>seckill_id</code>里面是tab上面的那个符号,不要弄错了.我使的是5.7版本,还有就是创建时间戳的时候,需要给它设置一个默认值</strong></p>
+<h3 id="创建秒杀数据库"><a href="#创建秒杀数据库" class="headerlink" title="创建秒杀数据库"></a>创建秒杀数据库</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE seckill(</span><br><span class="line">  `seckill_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT &apos;商品库存id&apos;,</span><br><span class="line">  `name` VARCHAR(120) NOT NULL  COMMENT &apos;商品名称&apos;,</span><br><span class="line">  `number` int NOT NULL COMMENT &apos;库存数量&apos;,</span><br><span class="line">  `start_time` TIMESTAMP not null ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT &apos;秒杀开始时间&apos;,</span><br><span class="line">  `end_time` TIMESTAMP not null ON UPDATE CURRENT_TIMESTAMP  DEFAULT CURRENT_TIMESTAMP COMMENT &apos;秒杀结束时间&apos;,</span><br><span class="line">  `create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT &apos;创建时间&apos;,</span><br><span class="line">  PRIMARY KEY (seckill_id),</span><br><span class="line">  key idx_start_time(start_time),</span><br><span class="line">  key idx_end_time(end_time),</span><br><span class="line">  key idx_create_time(create_time)</span><br><span class="line">)ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 COMMENT =&apos;秒杀库存表&apos;;</span><br></pre></td></tr></table></figure>
+<p>查看表的详细计划:show create table seckill\G;</p>
+<h3 id="插入几组数据"><a href="#插入几组数据" class="headerlink" title="插入几组数据"></a>插入几组数据</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">INSERT INTO seckill(name,number,start_time,end_time)</span><br><span class="line">VALUES</span><br><span class="line">(&apos;1000元秒杀iPad6&apos;,100,&apos;2018-1-31 16:31:00&apos;,&apos;2018-2-16 16:31:00&apos;),</span><br><span class="line">(&apos;500元秒杀iPad7&apos;,200,&apos;2018-1-31 16:31:00&apos;,&apos;2018-2-16 16:31:00&apos;),</span><br><span class="line">(&apos;300元秒杀小米4&apos;,300,&apos;2018-1-31 16:31:00&apos;,&apos;2018-2-16 16:31:00&apos;),</span><br><span class="line">(&apos;200元秒杀红米note&apos;,400,&apos;2018-1-31 16:31:00&apos;,&apos;2018-2-16 16:31:00&apos;);</span><br></pre></td></tr></table></figure>
+<h3 id="创建用户明细表"><a href="#创建用户明细表" class="headerlink" title="创建用户明细表"></a>创建用户明细表</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">create table success_killed(</span><br><span class="line">  `seckill_id` bigint NOT NULL COMMENT &apos;秒杀商品Id&apos;,</span><br><span class="line">  `user_phone` bigint NOT NULL COMMENT &apos;用户手机号&apos;,</span><br><span class="line">  `state` tinyint NOT NULL DEFAULT -1 COMMENT &apos;状态标识:-1:无效,0:成功,1:已付款,2:已发货&apos;,</span><br><span class="line">  `create_time` TIMESTAMP NOT NULL DEFAULT current_timestamp COMMENT &apos;创建时间&apos;,</span><br><span class="line">  PRIMARY KEY (seckill_id,user_phone),/*联合索引*/</span><br><span class="line">  key idx_create_time(create_time)</span><br><span class="line">)ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT =&apos;秒杀成功明细表&apos;;</span><br></pre></td></tr></table></figure>
+<p>现在发现IDEA里面用<code>show CREATE TABLE success_killed;</code>不用加上\G;</p>
+<p>一般其他的控制台要加上\G;即:<code>show CREATE TABLE success_killed\G;</code></p>
+<h2 id="DAO相关接口编码"><a href="#DAO相关接口编码" class="headerlink" title="DAO相关接口编码"></a>DAO相关接口编码</h2><h3 id="DAO层接口的设计"><a href="#DAO层接口的设计" class="headerlink" title="DAO层接口的设计"></a>DAO层接口的设计</h3><p>总的看来,我们的接口需要减少库存和增加明细的操作.</p>
+<p>但是还要更加细致</p>
+<p>其中,要注意的是,SuccessSeckilled是一个复合实体,里面有一个实体是Seckill,属于多对一的关系.</p>
+<p>也就是同样的商品秒杀成功的话,可能有多个明细.</p>
+<h3 id="SeckillDao接口的设计"><a href="#SeckillDao接口的设计" class="headerlink" title="SeckillDao接口的设计"></a>SeckillDao接口的设计</h3><ol>
+<li><p>根据商品ID和秒杀时间减少库存</p>
+</li>
+<li><p>根据商品Id秒杀商品</p>
+</li>
+<li><p>根据偏移量查询秒杀商品列表</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">public interface SeckillDao &#123;</span><br><span class="line">    /**</span><br><span class="line">     * 减库存</span><br><span class="line">     * @param secKillId</span><br><span class="line">     * @param killTime</span><br><span class="line">     * @return 如果影响行数&gt;1,表示更新的记录行数(如果返回0,说明这条语句没有更新成功.)</span><br><span class="line">     */</span><br><span class="line">    int reduceNumber(long secKillId, Date killTime);</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 根据Id秒杀商品</span><br><span class="line">     * @param seckillId</span><br><span class="line">     * @return</span><br><span class="line">     */</span><br><span class="line">    Seckill queryById(long seckillId);</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 根据偏移量查询秒杀商品列表</span><br><span class="line">     * @param limit 取多少条记录</span><br><span class="line">     * @param offet 偏移量</span><br><span class="line">     * @return 商品列表</span><br><span class="line">     * 会用到一个SQL的链接,因为是符合查询(查询秒杀明细(查询秒杀商品))</span><br><span class="line">     */</span><br><span class="line">    List&lt;Seckill&gt; queryAll(int offet,int limit);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="SuccessKilledDao接口的设计"><a href="#SuccessKilledDao接口的设计" class="headerlink" title="SuccessKilledDao接口的设计"></a>SuccessKilledDao接口的设计</h3><ol>
+<li><p>插入用户秒杀明细</p>
+</li>
+<li><p>查询携带秒杀商品的明细</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * 1.插入用户购买明细,可过滤重复(之前设置的是联合主键,所以可以帮我们过滤重复)</span><br><span class="line"> * 2.根据id查询Successkilled并携带Seckill实体</span><br><span class="line"> *</span><br><span class="line"> */</span><br><span class="line">public interface SuccessKilledDao &#123;</span><br><span class="line">    /**</span><br><span class="line">     * 插入用户购买明细</span><br><span class="line">     * @param secKillId</span><br><span class="line">     * @param userPhone</span><br><span class="line">     * @return  插入的行数,就是秒杀成功的记录</span><br><span class="line">     */</span><br><span class="line">    int insertSuccessKilled(long secKillId,long userPhone);</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * 根据id查询Successkilled并携带Seckill实体</span><br><span class="line">     * @param secKillId</span><br><span class="line">     * @return</span><br><span class="line">     */</span><br><span class="line">    SuccessKilled querySuccessKilledWithSeckill(long secKillId);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h2 id="基于MyBatis实现DAO"><a href="#基于MyBatis实现DAO" class="headerlink" title="基于MyBatis实现DAO"></a>基于MyBatis实现DAO</h2><p>mybatis与hibernate其实都是针对对象关系的映射框架.</p>
+<p>把数据库中的东西映射到对象</p>
+<p>反过来就把对象中的东西映射到数据库当中</p>
+<p>图示:</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/7505161-946d004c773772cb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<h2 id="mybatis的特点"><a href="#mybatis的特点" class="headerlink" title="mybatis的特点"></a>mybatis的特点</h2><p>参数+SQL=Entity/List</p>
+<h3 id="SQL写在的位置"><a href="#SQL写在的位置" class="headerlink" title="SQL写在的位置"></a>SQL写在的位置</h3><ol>
+<li>XML提供SQL(推荐)</li>
+</ol>
+<p>2, 注解提供SQL</p>
+<h3 id="实现DAO接口"><a href="#实现DAO接口" class="headerlink" title="实现DAO接口:"></a>实现DAO接口:</h3><ol>
+<li><p>Mapper自动实现DAO接口(推荐)<br> 我知道有一种是通过MyEclipse实现接口的方式,用起来挺爽的.但是不利于我们对设计接口的理解.</p>
+<p> 关注点:SQL如何编写,如何去设计DAO接口.节省了很多需要维护的程序.所有的实现都是mybatis自动完成.</p>
+</li>
+<li>API编程的方式实现DAO接口<br> 你可能会遗漏一些东西…影响工作效率</li>
+</ol>
+<h2 id="mybatis实现DAO编程"><a href="#mybatis实现DAO编程" class="headerlink" title="mybatis实现DAO编程"></a>mybatis实现DAO编程</h2><h3 id="mybatis官方文档地址"><a href="#mybatis官方文档地址" class="headerlink" title="mybatis官方文档地址"></a>mybatis官方文档地址</h3><p><a href="http://www.mybatis.org/mybatis-3/zh/index.html" target="_blank" rel="noopener">Mybatis官方链接</a></p>
+<p>驼峰命名转换:不用关心列名到属性名的转换了.</p>
+<p>配置文件如下:</p>
+<h4 id="mybatis-config-xml"><a href="#mybatis-config-xml" class="headerlink" title="mybatis-config.xml"></a>mybatis-config.xml</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;</span><br><span class="line">&lt;!DOCTYPE configuration</span><br><span class="line">        PUBLIC &quot;-//mybatis.org//DTD Config 3.0//EN&quot;</span><br><span class="line">        &quot;http://mybatis.org/dtd/mybatis-3-config.dtd&quot;&gt;</span><br><span class="line">&lt;!--1.配置全局属性--&gt;</span><br><span class="line">&lt;configuration&gt;</span><br><span class="line">    &lt;settings&gt;</span><br><span class="line">        &lt;!--使用JDBC的getGenerateKeys 获取数据库自增主键值,默认是false--&gt;</span><br><span class="line">        &lt;setting name=&quot;useGeneratekeys&quot; value=&quot;true&quot;/&gt;</span><br><span class="line">        &lt;!--使用列别名替换别名,默认是true</span><br><span class="line">            select name as title from table</span><br><span class="line">            列名name取得的列别名是title,mybatis会自动识别</span><br><span class="line">        --&gt;</span><br><span class="line">        &lt;setting name=&quot;useColumnLable&quot; value=&quot;true&quot;/&gt;</span><br><span class="line">        &lt;!--开启驼峰命名转换:Table(create_time)转为 Entity(createtime)--&gt;</span><br><span class="line">        &lt;setting name=&quot;mapUnderscoreToCamelCase&quot; value=&quot;true&quot;/&gt;</span><br><span class="line">    &lt;/settings&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="配置文件mapper-xml-的书写"><a href="#配置文件mapper-xml-的书写" class="headerlink" title="配置文件mapper.xml 的书写"></a>配置文件mapper.xml 的书写</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">1.引入方法内部的参数</span><br><span class="line">就跟HQL里里面的? 有类似之处</span><br><span class="line">#&#123;xxx&#125;  xxx是方法里面的参数</span><br><span class="line"></span><br><span class="line">2.mybatis配置的xml文件内部不能识别的符号的改写方法</span><br><span class="line">&gt;=</span><br><span class="line">配置文件中不允许有&gt;=符号的出现,允许下面这种写法:</span><br><span class="line">&lt;![CDATA[ &lt;= ]]&gt;</span><br><span class="line">为了防止冲突,就是告诉 &lt;= 不是xml的语法</span><br><span class="line"></span><br><span class="line">3.resultType--实体类名 parameterType-参数类型</span><br><span class="line"></span><br><span class="line">多个参数并不用加上parameterType</span><br><span class="line"></span><br><span class="line">4.解决主键冲突的话,可能出现错误:</span><br><span class="line"></span><br><span class="line">需要在insert into 中间加上ignore,即:insert ignore into 这样重复插入的话,就会插入不成功.返回插入的数=0</span><br><span class="line"></span><br><span class="line">5.解决mybatis把结果映射到表中同时映射表内部的实体问题</span><br><span class="line"></span><br><span class="line">可以利用内连接(inner join)来解决这个问题.</span><br><span class="line"></span><br><span class="line">select *</span><br><span class="line">from s s1</span><br><span class="line">inner join e e1 on s1.id = e1.id</span><br><span class="line">where s1.id =#&#123;Id&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>Mapper下的两个映射文件:</strong></p>
+<h4 id="SeckillDao-xml"><a href="#SeckillDao-xml" class="headerlink" title="SeckillDao.xml"></a>SeckillDao.xml</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;</span><br><span class="line">&lt;!DOCTYPE mapper</span><br><span class="line">        PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;</span><br><span class="line">        &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;</span><br><span class="line"></span><br><span class="line">&lt;mapper namespace=&quot;org.seckill.dao.SecKillDao&quot;&gt;</span><br><span class="line">    &lt;!--目的:为DAO接口方法提供SQL语句配置--&gt;</span><br><span class="line">    &lt;!--id就是方法名,看你的方法要执行什么操作了--&gt;</span><br><span class="line">    &lt;update id=&quot;reduceNumber&quot;&gt;</span><br><span class="line">        &lt;!--具体的SQL--&gt;</span><br><span class="line">        UPDATE seckill</span><br><span class="line">        SET number = number-1</span><br><span class="line">        WHERE seckill_id=#&#123;seckillId&#125;</span><br><span class="line">        AND start_time &lt;![CDATA[ &lt;= ]]&gt; #&#123;killTime&#125;</span><br><span class="line">        AND end_time &gt;= #&#123;killTime&#125;</span><br><span class="line">        AND number &gt; 0;</span><br><span class="line">    &lt;/update&gt;</span><br><span class="line"></span><br><span class="line">    &lt;select id=&quot;queryById&quot; resultType=&quot;Seckill&quot; parameterType=&quot;long&quot;&gt;</span><br><span class="line">        SELECT *</span><br><span class="line">        FROM seckill</span><br><span class="line">        WHERE seckill_id=#&#123;seckillId&#125;</span><br><span class="line">    &lt;/select&gt;</span><br><span class="line"></span><br><span class="line">    &lt;select id=&quot;queryAll&quot; resultType=&quot;Seckill&quot;&gt;</span><br><span class="line">        SELECT *</span><br><span class="line">        FROM seckill</span><br><span class="line">        ORDER BY create_time DESC</span><br><span class="line">        limit #&#123;offset&#125;,#&#123;limit&#125;</span><br><span class="line">    &lt;/select&gt;</span><br><span class="line">&lt;/mapper&gt;</span><br></pre></td></tr></table></figure>
+<h4 id="SuccessKilledDao-xml"><a href="#SuccessKilledDao-xml" class="headerlink" title="SuccessKilledDao.xml"></a>SuccessKilledDao.xml</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;</span><br><span class="line">&lt;!DOCTYPE mapper</span><br><span class="line">        PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;</span><br><span class="line">        &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;</span><br><span class="line"></span><br><span class="line">&lt;mapper namespace=&quot;org.seckill.dao.SuccessKilledDao&quot;&gt;</span><br><span class="line">    &lt;insert id=&quot;insertSuccessKilled&quot;&gt;</span><br><span class="line">        &lt;!--如果主键冲突,报错--&gt;</span><br><span class="line">        insert ignore into success_killed (seckill_id, user_phone,state)</span><br><span class="line">        values (#&#123;seckillId&#125;,#&#123;userPhone&#125;,0);</span><br><span class="line">    &lt;/insert&gt;</span><br><span class="line">    &lt;select id=&quot;querySuccessKilledWithSeckill&quot; resultType=&quot;SuccessKilled&quot;&gt;</span><br><span class="line">        &lt;!--根据id查询Successkilled并携带Seckill实体--&gt;</span><br><span class="line">        &lt;!--如何告诉MyBatis把结果映射到SuccessKilled同时映射SecKill属性--&gt;</span><br><span class="line">        &lt;!--最重要的原因就是:可以自由的控制SQL--&gt;</span><br><span class="line">        SELECT</span><br><span class="line">        sk.seckill_id,</span><br><span class="line">        sk.user_phone,</span><br><span class="line">        sk.create_time,</span><br><span class="line">        sk.state,</span><br><span class="line">        s.seckill_id &quot;seckill.seckill_id&quot;,</span><br><span class="line">        s.name &quot;seckill.name&quot;,</span><br><span class="line">        s.number &quot;seckill.number&quot;,</span><br><span class="line">        s.start_time &quot;seckill.start_time&quot;,</span><br><span class="line">        s.end_time &quot;seckill.end_time&quot;,</span><br><span class="line">        s.create_time &quot;seckill.create_time&quot;</span><br><span class="line">        FROM success_killed sk</span><br><span class="line">        INNER JOIN seckill s ON sk.seckill_id=s.seckill_id</span><br><span class="line">        WHERE sk.seckill_id=#&#123;seckillId&#125; and sk.user_phone=#&#123;userPhone&#125;;</span><br><span class="line">    &lt;/select&gt;</span><br><span class="line">&lt;/mapper&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="Mybatis整合Spring理论"><a href="#Mybatis整合Spring理论" class="headerlink" title="Mybatis整合Spring理论"></a>Mybatis整合Spring理论</h2><h2 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">1.更少的编码</span><br><span class="line">    只写接口,不写实现类</span><br><span class="line">    接口本身就能说明很多事情</span><br><span class="line"></span><br><span class="line">    比如:Seckill queryById(long secKillID);</span><br><span class="line">        1.参数 --long</span><br><span class="line">        2.结果集 --SecKill</span><br><span class="line">        3.行为: query</span><br><span class="line">        根据上面的就可以写SQL,配置mapper.xml就可以了.</span><br><span class="line"></span><br><span class="line">2.更少的配置</span><br><span class="line">        1.别名</span><br><span class="line">               就比如:从resultType=&quot;Scekill&quot;来说吧,本来他应该写更长的名字才对,即resultType=&quot;org.seckill.dao.SecKillDao&quot;</span><br><span class="line">               但是可以简写的原因就是,mybatis帮我们实现了包扫描,即Package Scan</span><br><span class="line">        2.配置扫描</span><br><span class="line">              1.</span><br><span class="line">               &lt;mapper resource=&quot;mapper/SeckillDao.xml&quot;/&gt;</span><br><span class="line">               &lt;mapper resource=&quot;mapper/SuccessKilledDao.xml&quot;/&gt;</span><br><span class="line">                   ......</span><br><span class="line">                当有很多这样的配置文件的话,我们会很费劲的添加,但mybatis有一个自动扫描配置文件的功能.</span><br><span class="line">              2.dao实现</span><br><span class="line">              一般就是&lt;bean id = &quot;xxxDao&quot; class =&quot;xxx.xxx.dao&quot;/&gt;的形式配置交给Spring容器管理.</span><br><span class="line">              要是有很多这样的配置文件的时候,我们就需要些很多这样的配置.</span><br><span class="line"></span><br><span class="line">              mybatis可以自动实现DAO接口,统一叫Mapper,效率非常高,</span><br><span class="line"></span><br><span class="line">              但是不利于初学者的学习.我之前做的电商项目就是DAO用mybatis自动生成的文件.</span><br><span class="line">              因为出来一堆mapper,就是dao,和一堆映射文件xxxmapper.xml.</span><br><span class="line"></span><br><span class="line">              自动注入spring容器.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">3.足够的灵活性</span><br><span class="line">        1.自由定制SQL语句</span><br><span class="line">        2.自由传递传参</span><br><span class="line">        3.结果集自动赋值</span><br><span class="line"></span><br><span class="line">自由的传递参数,自由的返回实体的类型</span><br></pre></td></tr></table></figure>
+<p><strong>XML提供SQL,DAO接口Mapper.</strong></p>
+<p>这种方式很好</p>
+<h2 id="mybatis整合spring编码"><a href="#mybatis整合spring编码" class="headerlink" title="mybatis整合spring编码"></a>mybatis整合spring编码</h2><h2 id="spring整合mybatis官方文档"><a href="#spring整合mybatis官方文档" class="headerlink" title="spring整合mybatis官方文档"></a>spring整合mybatis官方文档</h2><p><a href="https://docs.spring.io/spring/docs/4.1.7.RELEASE/spring-framework-reference/pdf/" target="_blank" rel="noopener">Spring4.1.7官方版本</a></p>
+<p>取它的容器头部.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span><br><span class="line">&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;</span><br><span class="line">xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span><br><span class="line">xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans</span><br><span class="line">http://www.springframework.org/schema/beans/spring-beans.xsd&quot;&gt;</span><br><span class="line"></span><br><span class="line">    &lt;bean id=&quot;...&quot; class=&quot;...&quot;&gt;</span><br><span class="line">    &lt;!-- collaborators and configuration for this bean go here --&gt;</span><br><span class="line">    &lt;/bean&gt;</span><br><span class="line">    &lt;bean id=&quot;...&quot; class=&quot;...&quot;&gt;</span><br><span class="line">    &lt;!-- collaborators and configuration for this bean go here --&gt;</span><br><span class="line">    &lt;/bean&gt;</span><br><span class="line">&lt;!-- more bean definitions go here --&gt;</span><br><span class="line">&lt;/beans&gt;</span><br></pre></td></tr></table></figure></p>
+<p>连接池的配置,</p>
+<p>c3p0连接池的配置:comboolPoolDataSource<br>除了驱动类,URL,user,password之外.还有一些私有配置</p>
+<p><code>maxPoolSize</code>,每一个数据库中池子的最大数:,默认是15.<br><code>minPoolSize</code>,默认是3.</p>
+<p><code>autoCommitOnClose</code></p>
+<p>连接池的Connection调用Close的时候,本质上是把连接对象放到池子当中,放到池子的过程当中,c3p0连接池要做一些清理工作.</p>
+<p>当close连接的时候,不要commit</p>
+<p><code>checkoutTimeOut</code><br>当maxPoolSize连接满的时候,等待连接的间隔时间,c3p0默认是0,无线等待.</p>
+<p><code>acquireRetryAttempts</code><br>获取连接失败重试次数</p>
+<p><code>&lt;property name=&quot;sqlSessionFactoryBeanName&quot; value=&quot;sqlSessionFactory&quot;/&gt;</code><br>后边的那个value值就是sqlSessionFactory的名字.</p>
+<p>当MapperScannerConfigure启动的时候,可能会出现jdbc.properties里面的东西还没有被加载,不能拿到SQLSessionFactory里面的参数.</p>
+<p>当用到mybatis的时候,才会去找对应的SqlSessionFactory.</p>
+<h4 id="spring-dao-xml配置"><a href="#spring-dao-xml配置" class="headerlink" title="spring-dao.xml配置"></a>spring-dao.xml配置</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span><br><span class="line">&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;</span><br><span class="line">       xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span><br><span class="line">       xmlns:context=&quot;http://www.springframework.org/schema/context&quot;</span><br><span class="line">       xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans</span><br><span class="line">http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd&quot;&gt;</span><br><span class="line">    &lt;!--配置整合mybatis过程--&gt;</span><br><span class="line">    &lt;!--1:配置数据库相关参数</span><br><span class="line">        properties的属性: $&#123;url&#125;</span><br><span class="line">    --&gt;</span><br><span class="line">    &lt;context:property-placeholder location=&quot;classpath:jdbc.properties&quot;/&gt;</span><br><span class="line"></span><br><span class="line">    &lt;bean id=&quot;dataSource&quot; class=&quot;com.mchange.v2.c3p0.ComboPooledDataSource&quot;&gt;</span><br><span class="line">        &lt;!--配置连接池属性--&gt;</span><br><span class="line">        &lt;property name=&quot;driverClass&quot; value=&quot;$&#123;jdbc.driver&#125;&quot;/&gt;</span><br><span class="line">        &lt;property name=&quot;jdbcUrl&quot; value=&quot;$&#123;jdbc.url&#125;&quot;/&gt;</span><br><span class="line">        &lt;property name=&quot;user&quot; value=&quot;$&#123;jdbc.username&#125;&quot;/&gt;</span><br><span class="line">        &lt;property name=&quot;password&quot; value=&quot;$&#123;jdbc.password&#125;&quot;/&gt;</span><br><span class="line">        &lt;!--2:c3p0连接池的私有属性--&gt;</span><br><span class="line">        &lt;property name=&quot;maxPoolSize&quot; value=&quot;30&quot;/&gt;</span><br><span class="line">        &lt;property name=&quot;minPoolSize&quot; value=&quot;10&quot;/&gt;</span><br><span class="line">        &lt;!--关闭连接后不自动commit--&gt;</span><br><span class="line">        &lt;property name=&quot;autoCommitOnClose&quot; value=&quot;false&quot;/&gt;</span><br><span class="line">        &lt;!--获取连接超时时间--&gt;</span><br><span class="line">        &lt;!--property name=&quot;checkoutTimeout&quot; value=&quot;8000&quot;/--&gt;</span><br><span class="line">        &lt;!--当获取连接失败重试次数--&gt;</span><br><span class="line">        &lt;property name=&quot;acquireRetryAttempts&quot; value=&quot;2&quot;/&gt;</span><br><span class="line">    &lt;/bean&gt;</span><br><span class="line"></span><br><span class="line">    &lt;!--3.配置SQLSessionFactory对象--&gt;</span><br><span class="line">    &lt;bean id=&quot;sqlSessionFactory&quot; class=&quot;org.mybatis.spring.SqlSessionFactoryBean&quot;&gt;</span><br><span class="line">        &lt;!--注入数据库连接池--&gt;</span><br><span class="line">        &lt;property name=&quot;dataSource&quot; ref=&quot;dataSource&quot;/&gt;</span><br><span class="line">        &lt;!--配置mybatis全局配置文件:mybatis-config.xml--&gt;</span><br><span class="line">        &lt;property name=&quot;configLocation&quot; value=&quot;classpath:mybatis-config.xml&quot;/&gt;</span><br><span class="line">        &lt;!--扫描Entity包 使用别名 org.seckill.entity.Seckill同一的转换为Seckill使用</span><br><span class="line">            有多个包的时候,可以分开写:</span><br><span class="line">            value=&quot;org.seckill.entity;org.seckill.entity2&quot;</span><br><span class="line">        --&gt;</span><br><span class="line">        &lt;property name=&quot;typeAliasesPackage&quot; value=&quot;org.seckill.entity&quot;/&gt;</span><br><span class="line">        &lt;!--扫描SQL配置文件:mapper需要的xml文件--&gt;</span><br><span class="line">        &lt;property name=&quot;mapperLocations&quot; value=&quot;classpath:mapper/*.xml&quot;/&gt;</span><br><span class="line">    &lt;/bean&gt;</span><br><span class="line"></span><br><span class="line">    &lt;!--4.配置扫描DAO接口包,动态实现Dao接口,并注入到Spring容器中.</span><br><span class="line">           可以看出这个类专门是扫描mapper的,而在mybatis中mapper就相当于dao</span><br><span class="line">    --&gt;</span><br><span class="line">    &lt;bean class=&quot;org.mybatis.spring.mapper.MapperScannerConfigurer&quot;&gt;</span><br><span class="line">        &lt;!--注入SQLSessionFactory--&gt;</span><br><span class="line">        &lt;property name=&quot;sqlSessionFactoryBeanName&quot; value=&quot;sqlSessionFactory&quot;/&gt;</span><br><span class="line">        &lt;!--给出需要扫描Dao接口包--&gt;</span><br><span class="line">        &lt;property name=&quot;basePackage&quot; value=&quot;org.seckill.dao&quot;/&gt;</span><br><span class="line">    &lt;/bean&gt;</span><br><span class="line">&lt;/beans&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="单元测试"><a href="#单元测试" class="headerlink" title="单元测试"></a>单元测试</h2><h3 id="spring-与junit整合"><a href="#spring-与junit整合" class="headerlink" title="spring 与junit整合"></a>spring 与junit整合</h3><ol>
+<li><p>ctrl+shift+t创建单元测试类</p>
+</li>
+<li><p>RunWith(SpringJunit4ClassRunner.class)//junit启动时加载springIOC容器.</p>
+</li>
+<li><p>@Resource不管用,改用@Autowired</p>
+</li>
+<li><p>QueryAll方法测试遇到下面的<strong>绑定参数</strong>异常</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">org.apache.ibatis.binding.BindingException: Parameter &apos;offset&apos; not found. Available parameters are [0, 1, param1, param2]</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>需要加上@Param(“实际形参”)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">List&lt;Seckill&gt; queryAll(@Param(&quot;offset&quot;) int offset, @Param(&quot;limit&quot;) int limit);</span><br></pre></td></tr></table></figure></p>
+<h3 id="SeckillDaoTest测试"><a href="#SeckillDaoTest测试" class="headerlink" title="SeckillDaoTest测试:"></a>SeckillDaoTest测试:</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * 配置Spring和junit整合,junit启动时加载springIOC容器</span><br><span class="line"> * spring-test,junit</span><br><span class="line"> */</span><br><span class="line">@RunWith(SpringJUnit4ClassRunner.class)</span><br><span class="line">//告诉junitspring配置文件的位置</span><br><span class="line">@ContextConfiguration(&#123;&quot;classpath:spring/spring-dao.xml&quot;&#125;)</span><br><span class="line">public class SecKillDaoTest &#123;</span><br><span class="line">    //注入Dao</span><br><span class="line">    @Autowired</span><br><span class="line">    private SecKillDao secKillDao;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     *  Preparing: SELECT seckill.seckill_id,seckill.name,seckill.number,seckill.start_time,seckill.end_time,seckill.create_time</span><br><span class="line">     *  FROM seckill</span><br><span class="line">     *  WHERE seckill.seckill_id = ?;</span><br><span class="line">     * @throws Exception</span><br><span class="line">     */</span><br><span class="line">    @Test</span><br><span class="line">    public void queryById() throws Exception &#123;</span><br><span class="line">        long id=1000L;</span><br><span class="line">        Seckill seckill = secKillDao.queryById(id);</span><br><span class="line">        System.out.println(seckill);</span><br><span class="line">    &#125;</span><br><span class="line">    @Test</span><br><span class="line">    public void reduceNumber() throws Exception &#123;</span><br><span class="line">        Date killTime=new Date();</span><br><span class="line">        int updateNumber= secKillDao.reduceNumber(1000L, killTime);</span><br><span class="line">        System.out.println(&quot;updateNumber=&quot;+updateNumber);</span><br><span class="line">    &#125;</span><br><span class="line">    /**</span><br><span class="line">     *</span><br><span class="line">     * @throws Exception</span><br><span class="line">     */</span><br><span class="line">    @Test</span><br><span class="line">    public void queryAll() throws Exception &#123;</span><br><span class="line">        List&lt;Seckill&gt; seckills = secKillDao.queryAll(2, 100);</span><br><span class="line">        for (Seckill seckill : seckills) &#123;</span><br><span class="line">            System.out.println(seckill);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="SuccessKilledTest测试"><a href="#SuccessKilledTest测试" class="headerlink" title="SuccessKilledTest测试:"></a>SuccessKilledTest测试:</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">@RunWith(SpringJUnit4ClassRunner.class)</span><br><span class="line">@ContextConfiguration(&#123;&quot;classpath:spring/spring-dao.xml&quot;&#125;)</span><br><span class="line">public class SuccessKilledDaoTest &#123;</span><br><span class="line">    @Autowired</span><br><span class="line">    private SuccessKilledDao successKilledDao;</span><br><span class="line">    @Test</span><br><span class="line">    public void insertSuccessKilled() throws Exception &#123;</span><br><span class="line">        long id=1000L;</span><br><span class="line">        long phone=13784832725L;</span><br><span class="line">        int updateSuccessedKilled = successKilledDao.insertSuccessKilled(id, phone);</span><br><span class="line">        System.out.println(updateSuccessedKilled);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /**</span><br><span class="line">     * Preparing:</span><br><span class="line">     * SELECT sk.seckill_id, sk.create_time, sk.state, sk.user_phone, s.seckill_id &quot;seckill.seckill_id&quot;, s.name &quot;seckill_name&quot;, s.number &quot;seckill_number&quot;, s.start_time &quot;seckill_start_time&quot;, s.end_time &quot;seckill_end_time&quot;, s.create_time &quot;seckill_create_time&quot;</span><br><span class="line">     * FROM success_killed sk</span><br><span class="line">     * INNER JOIN seckill s ON sk.seckill_id = s.seckill_id</span><br><span class="line">     * WHERE sk.seckill_id = ? AND sk.user_phone = ?;</span><br><span class="line">     * @throws Exception</span><br><span class="line">     */</span><br><span class="line">    @Test</span><br><span class="line">    public void querySuccessKilledWithSeckill() throws Exception &#123;</span><br><span class="line">        long id=1001L;</span><br><span class="line">        long phone=15733207536L;</span><br><span class="line">        SuccessKilled successKilled = successKilledDao.querySuccessKilledWithSeckill(id,phone);</span><br><span class="line">        System.out.println(successKilled);</span><br><span class="line">        System.out.println(successKilled.getSeckill());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </article>
+    <!-- 前后页  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2018/01/01/数据库的基本操作/" title= 数据库的基本操作 >
+                    <div class="nextTitle">数据库的基本操作</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2017/12/01/SpringData-03/" title= springData-03 >
+                    <div class="prevTitle">springData-03</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+    <div id="lv-container" data-id="city" data-uid= MTAyMC8zNDE4Ni8xMDcyMw==>
+        <script type="text/javascript">
+            (function (d, s) {
+                var j, e = d.getElementsByTagName(s)[0];
+                if (typeof LivereTower === 'function') { return; }
+                j = d.createElement(s);
+                j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+                j.async = true;
+
+                e.parentNode.insertBefore(j, e);
+            })(document, 'script');
+        </script>
+        <noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+    </div>
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!--PC版-->
+
+    <!--PC版-->
+
+
+    
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:15733207536@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/lovemoganna" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title=wechat>
+                  
+                  <img class="profile-qr" src="/assets/wechat.jpg" />
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/luoyupiaoshang" class="iconfont-archer twitter" target="_blank" title=twitter></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://luoyupiaoshang.club/" target="_blank">luoyupiaoshang</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+        <span id="busuanzi_container_site_pv">访问总计 <span id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+    
+</footer>
+
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#数据库设计编码"><span class="toc-number">1.</span> <span class="toc-text">数据库设计编码</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#创建秒杀数据库"><span class="toc-number">1.1.</span> <span class="toc-text">创建秒杀数据库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#插入几组数据"><span class="toc-number">1.2.</span> <span class="toc-text">插入几组数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建用户明细表"><span class="toc-number">1.3.</span> <span class="toc-text">创建用户明细表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DAO相关接口编码"><span class="toc-number">2.</span> <span class="toc-text">DAO相关接口编码</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#DAO层接口的设计"><span class="toc-number">2.1.</span> <span class="toc-text">DAO层接口的设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SeckillDao接口的设计"><span class="toc-number">2.2.</span> <span class="toc-text">SeckillDao接口的设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SuccessKilledDao接口的设计"><span class="toc-number">2.3.</span> <span class="toc-text">SuccessKilledDao接口的设计</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#基于MyBatis实现DAO"><span class="toc-number">3.</span> <span class="toc-text">基于MyBatis实现DAO</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mybatis的特点"><span class="toc-number">4.</span> <span class="toc-text">mybatis的特点</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#SQL写在的位置"><span class="toc-number">4.1.</span> <span class="toc-text">SQL写在的位置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#实现DAO接口"><span class="toc-number">4.2.</span> <span class="toc-text">实现DAO接口:</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mybatis实现DAO编程"><span class="toc-number">5.</span> <span class="toc-text">mybatis实现DAO编程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#mybatis官方文档地址"><span class="toc-number">5.1.</span> <span class="toc-text">mybatis官方文档地址</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#mybatis-config-xml"><span class="toc-number">5.1.1.</span> <span class="toc-text">mybatis-config.xml</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#配置文件mapper-xml-的书写"><span class="toc-number">5.2.</span> <span class="toc-text">配置文件mapper.xml 的书写</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#SeckillDao-xml"><span class="toc-number">5.2.1.</span> <span class="toc-text">SeckillDao.xml</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#SuccessKilledDao-xml"><span class="toc-number">5.2.2.</span> <span class="toc-text">SuccessKilledDao.xml</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Mybatis整合Spring理论"><span class="toc-number">6.</span> <span class="toc-text">Mybatis整合Spring理论</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#目标"><span class="toc-number">7.</span> <span class="toc-text">目标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mybatis整合spring编码"><span class="toc-number">8.</span> <span class="toc-text">mybatis整合spring编码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#spring整合mybatis官方文档"><span class="toc-number">9.</span> <span class="toc-text">spring整合mybatis官方文档</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#spring-dao-xml配置"><span class="toc-number">9.0.1.</span> <span class="toc-text">spring-dao.xml配置</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#单元测试"><span class="toc-number">10.</span> <span class="toc-text">单元测试</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#spring-与junit整合"><span class="toc-number">10.1.</span> <span class="toc-text">spring 与junit整合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SeckillDaoTest测试"><span class="toc-number">10.2.</span> <span class="toc-text">SeckillDaoTest测试:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SuccessKilledTest测试"><span class="toc-number">10.3.</span> <span class="toc-text">SuccessKilledTest测试:</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">归档</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">标签</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">分类</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-archive"> Total : 25 </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/03</span><a class="archive-post-title" href= "/2018/04/03/interview/" >李刚_产品经理实习生</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/28</span><a class="archive-post-title" href= "/2018/02/28/mysql设计以及架构优化/" >mysql设计以及架构优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/25</span><a class="archive-post-title" href= "/2018/02/25/Redis集群的搭建/" >Redis-cluster搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/redis/" >Redis基本操作</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/spring和redis整合/" >Spring与Redis整合</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/24</span><a class="archive-post-title" href= "/2018/02/24/Redis集群接口/" >Redis接口的编写</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/22</span><a class="archive-post-title" href= "/2018/02/22/DB02-数据库字段设计规范/" >DB02-数据库字段设计规范</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span><a class="archive-post-title" href= "/2018/02/01/mysql日志划分/" >mysql服务器日志</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/27</span><a class="archive-post-title" href= "/2018/01/27/选择常规查询和慢速查询日志的输出目的地/" >选择常规查询和慢速查询日志的输出目的地</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/25</span><a class="archive-post-title" href= "/2018/01/25/集群环境中解决Session共享问题/" >集群环境中解决Session共享问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/24</span><a class="archive-post-title" href= "/2018/01/24/ajax跨域问题/" >ajax跨域问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/09</span><a class="archive-post-title" href= "/2018/01/09/WebCrawler/" >WebCrawler-网络爬虫01</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/08</span><a class="archive-post-title" href= "/2018/01/08/区块链/" >区块链(Blockchain)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀Web层开发/" >秒杀web层开发</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀service层开发/" >秒杀Service层开发</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/02</span><a class="archive-post-title" href= "/2018/01/02/秒杀高并发优化/" >秒杀高并发优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/Markdown/" >markdown语法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/秒杀概述/" >秒杀概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/数据库的基本操作/" >数据库的基本操作</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2018/01/01/秒杀Dao层开发/" >秒杀Dao层开发</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2017 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/apringData-01/" >springData-01</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/SpringData-02/" >springData-02</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/01</span><a class="archive-post-title" href= "/2017/12/01/SpringData-03/" >springData-03</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href= "/2017/11/09/springboot/" >SpringBoot初识</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span><a class="archive-post-title" href= "/2017/11/09/Spring事务/" >Spring事务</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="mysql设计"><span class="iconfont-archer">&#xe606;</span>mysql设计</span>
+    
+        <span class="sidebar-tag-name" data-tags="springdata"><span class="iconfont-archer">&#xe606;</span>springdata</span>
+    
+        <span class="sidebar-tag-name" data-tags="Redis"><span class="iconfont-archer">&#xe606;</span>Redis</span>
+    
+        <span class="sidebar-tag-name" data-tags="Redis-cluster"><span class="iconfont-archer">&#xe606;</span>Redis-cluster</span>
+    
+        <span class="sidebar-tag-name" data-tags="markdown"><span class="iconfont-archer">&#xe606;</span>markdown</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="Transaction"><span class="iconfont-archer">&#xe606;</span>Transaction</span>
+    
+        <span class="sidebar-tag-name" data-tags="爬虫的原理"><span class="iconfont-archer">&#xe606;</span>爬虫的原理</span>
+    
+        <span class="sidebar-tag-name" data-tags="爬虫架构"><span class="iconfont-archer">&#xe606;</span>爬虫架构</span>
+    
+        <span class="sidebar-tag-name" data-tags="Session共享"><span class="iconfont-archer">&#xe606;</span>Session共享</span>
+    
+        <span class="sidebar-tag-name" data-tags="个人简历"><span class="iconfont-archer">&#xe606;</span>个人简历</span>
+    
+        <span class="sidebar-tag-name" data-tags="实习生"><span class="iconfont-archer">&#xe606;</span>实习生</span>
+    
+        <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
+    
+        <span class="sidebar-tag-name" data-tags="ServiceLog"><span class="iconfont-archer">&#xe606;</span>ServiceLog</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构优化"><span class="iconfont-archer">&#xe606;</span>架构优化</span>
+    
+        <span class="sidebar-tag-name" data-tags="FT中文网"><span class="iconfont-archer">&#xe606;</span>FT中文网</span>
+    
+        <span class="sidebar-tag-name" data-tags="区块链"><span class="iconfont-archer">&#xe606;</span>区块链</span>
+    
+        <span class="sidebar-tag-name" data-tags="SSM"><span class="iconfont-archer">&#xe606;</span>SSM</span>
+    
+        <span class="sidebar-tag-name" data-tags="Web"><span class="iconfont-archer">&#xe606;</span>Web</span>
+    
+        <span class="sidebar-tag-name" data-tags="Bootstrap"><span class="iconfont-archer">&#xe606;</span>Bootstrap</span>
+    
+        <span class="sidebar-tag-name" data-tags="Service"><span class="iconfont-archer">&#xe606;</span>Service</span>
+    
+        <span class="sidebar-tag-name" data-tags="增删改查"><span class="iconfont-archer">&#xe606;</span>增删改查</span>
+    
+        <span class="sidebar-tag-name" data-tags="RowsLock"><span class="iconfont-archer">&#xe606;</span>RowsLock</span>
+    
+        <span class="sidebar-tag-name" data-tags="高并发"><span class="iconfont-archer">&#xe606;</span>高并发</span>
+    
+        <span class="sidebar-tag-name" data-tags="SpringBoot"><span class="iconfont-archer">&#xe606;</span>SpringBoot</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="mysql"><span class="iconfont-archer">&#xe60a;</span>mysql</span>
+    
+        <span class="sidebar-category-name" data-categories="spring"><span class="iconfont-archer">&#xe60a;</span>spring</span>
+    
+        <span class="sidebar-category-name" data-categories="Redis"><span class="iconfont-archer">&#xe60a;</span>Redis</span>
+    
+        <span class="sidebar-category-name" data-categories="Seckill"><span class="iconfont-archer">&#xe60a;</span>Seckill</span>
+    
+        <span class="sidebar-category-name" data-categories="SpringBoot"><span class="iconfont-archer">&#xe60a;</span>SpringBoot</span>
+    
+        <span class="sidebar-category-name" data-categories="区块链-Blockchain"><span class="iconfont-archer">&#xe60a;</span>区块链-Blockchain</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div>
+
+    <script>
+    var siteMeta = {
+        root: '/',
+        author: 'LiGang'
+    }
+</script>
+    <!-- busuanzi  -->
+    
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+    
+    </body>
+</html>
+
+
