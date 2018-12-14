@@ -1,0 +1,7 @@
+cache
+output
+.doit.db.bak
+.doit.db.dir
+_env/
+__pycache__/
+.idea
