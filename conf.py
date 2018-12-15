@@ -138,6 +138,7 @@ NAVIGATION_LINKS = {
     DEFAULT_LANG: (
         ("/archive.html", "Archive"),
         ("/categories/", "Tags"),
+        ("https://github.com/lovemoganna", "Github"),
         ("/rss.xml", "RSS feed"),
     ),
 }
@@ -150,7 +151,7 @@ NAVIGATION_ALT_LINKS = {
 }
 
 # Name of the theme to use.
-THEME = "bootblog4"
+THEME = "Bootstrap4"
 
 # Primary color of your theme. This will be used to customize your theme.
 # Must be a HEX value.
@@ -178,6 +179,7 @@ THEME_CONFIG = {
         'sidebar': ''
     }
 }
+
 
 # POSTS and PAGES contains (wildcard, destination, template) tuples.
 # (translatable)
@@ -214,18 +216,17 @@ THEME_CONFIG = {
 #     )
 
 POSTS = (
-    ("posts/*.rst", "posts", "post.tmpl"),
-    ("posts/*.md", "posts", "post.tmpl"),
-    ("posts/*.txt", "posts", "post.tmpl"),
-    ("posts/*.html", "posts", "post.tmpl"),
+    ("posts/*.ipynb", "blog", "post.tmpl"),
+    ("posts/*.md", "blog", "post.tmpl"),
+    ("posts/*.rst", "blog", "post.tmpl"),
+    ("posts/*.txt", "blog", "post.tmpl"),
 )
 PAGES = (
-    ("pages/*.rst", "pages", "page.tmpl"),
-    ("pages/*.md", "pages", "page.tmpl"),
-    ("pages/*.txt", "pages", "page.tmpl"),
-    ("pages/*.html", "pages", "page.tmpl"),
+    ("pages/*.md", "", "story.tmpl"),
+    ("pages/*.ipynb", "", "story.tmpl"),
+    ("pages/*.rst", "", "story.tmpl"),
+    ("pages/*.txt", "", "story.tmpl"),
 )
-
 
 # Below this point, everything is optional
 
