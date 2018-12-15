@@ -5,3 +5,5 @@ output
 _env/
 __pycache__/
 .idea
+themes
+templates
